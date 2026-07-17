@@ -9,14 +9,14 @@ export interface Product {
   rating: number;
 }
 
-export const products: Product[] = [
+export const products = [
   {
-    id: 1,
-    title: "گوشی موبایل سامسونگ مدل Galaxy S24 Ultra",
-    price: 65000000,
-    image: "https://dkstat.com/dk-static/dg-products/1.jpg", // لینک فرضی
-    discount: 5,
-    rating: 4.8,
+      id: 1,
+    title: "گوشی موبایل سامسونگ مدل S24 Ultra",
+    price: 70000000,
+    image: "https://dkstat.com/dk-static/dg-products/f793910c0e395460f789e5a7b7f16f5686049457_1705574542.jpg",
+    rating: 4.5,
+    discount: 10,
   },
   {
     id: 2,

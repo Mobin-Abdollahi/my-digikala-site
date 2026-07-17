@@ -1,50 +1,59 @@
-// src/app/components/product/productCard.tsx
-import React from 'react';
-import { Product } from '../../data/products';
-import { formatPrice } from '../../utils/formatPrice';
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-interface Props {
+import Link from "next/link";
+import { useCart } from "../../store/cart-context";
+import type { Product } from "../../types/product";
+import { formatPrice } from "../../utils/formatPrice";
+
+type ProductCardProps = {
   product: Product;
-}
+};
 
-const ProductCard = ({ product }: Props) => {
+export default function ProductCard({ product }: ProductCardProps) {
+  const { addToCart } = useCart();
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col h-full">
-      {/* تصویر محصول */}
-      <div className="relative w-full h-48 mb-4 flex items-center justify-center bg-gray-50 rounded-md">
-        <span className="text-gray-400 text-xs">تصویر محصول</span>
-        {/* بعداً از Image استفاده می‌کنیم */}
-      </div>
-
-      {/* عنوان */}
-      <h3 className="text-sm font-medium text-gray-800 line-clamp-2 mb-4 leading-6 h-12">
-        {product.title}
-      </h3>
-
-      {/* قیمت و امتیاز */}
-      <div className="mt-auto">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-yellow-500 text-xs">⭐ {product.rating}</span>
-          {product.discount && (
-            <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">
-              {product.discount}%
-            </span>
+    <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md">
+      <Link href={`/product/${product.id}`} className="block">
+        <div className="aspect-square w-full bg-zinc-100">
+          {product.image ? (
+            <img
+              src={product.image}
+              alt={product.title}
+              className="h-full w-full object-contain p-4"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-zinc-400">
+              تصویری موجود نیست
+            </div>
           )}
         </div>
 
-        <div className="flex flex-col items-end">
-          <div className="flex items-center gap-1">
-            <span className="font-bold text-lg">{formatPrice(product.price)}</span>
-            <span className="text-[10px]">تومان</span>
+        <div className="space-y-3 p-4">
+          <h3 className="line-clamp-2 min-h-12 text-sm font-medium text-zinc-800">
+            {product.title}
+          </h3>
+
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-zinc-500">امتیاز</span>
+            <span className="font-semibold text-amber-500">{product.rating}</span>
+          </div>
+
+          <div className="text-left text-base font-bold text-red-600">
+            {formatPrice(product.price)} تومان
           </div>
         </div>
+      </Link>
+
+      <div className="p-4 pt-0">
+        <button
+          onClick={() => addToCart(product)}
+          className="w-full rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+        >
+          افزودن به سبد
+        </button>
       </div>
-      
-      <button className="w-full mt-4 bg-red-500 text-white py-2 rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">
-        افزودن به سبد
-      </button>
     </div>
   );
-};
-
-export default ProductCard;
+}

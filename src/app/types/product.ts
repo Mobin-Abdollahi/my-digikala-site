@@ -1,10 +1,9 @@
-export type Product = {
+export interface Product {
   id: number;
   title: string;
   price: number;
-  originalPrice?: number;
-  image: string;
   rating: number;
-  discountPercent?: number;
-  category: string;
-};
+  brand?: string;    // علامت سوال اضافه شد
+  discount?: number; // علامت سوال اضافه شد
+  image?: string;
+}

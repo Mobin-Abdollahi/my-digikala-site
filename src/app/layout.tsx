@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import { CartProvider } from "./store/cart-context";
 
 export const metadata: Metadata = {
   title: "My DigiKala Clone",
-  description: "A portfolio ecommerce project built with Next.js",
+  description: "Digikala clone project with Next.js",
 };
 
 export default function RootLayout({
@@ -15,10 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa" dir="rtl">
-      <body className="bg-zinc-100 text-zinc-900">
-        <Navbar />
-        {children}
-        <Footer />
+      <body>
+        <CartProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );
