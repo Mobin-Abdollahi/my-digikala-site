@@ -1,25 +1,39 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import React from "react"; // اضافه شد
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { products } from "../../../data/products";
-import { useCart } from "../../../store/cart-context";
-import { formatPrice } from "../../../utils/formatPrice";
+import { useCart } from "../.././store/cart-context";
+import { products } from "../.././data/products";
+import { formatPrice } from "../.././utils/formatPrice";
 
 type ProductPageProps = {
-  params: {
-    id: string;
-  };
+  params: Promise<{ // تغییر به Promise برای سازگاری کامل
+    productId: string;
+  }>;
 };
 
 export default function ProductPage({ params }: ProductPageProps) {
   const { addToCart } = useCart();
+  
+  // باز کردن پکیج params
+  const resolvedParams = React.use(params);
+  const productId = resolvedParams.productId;
 
-  const product = products.find((item) => String(item.id) === params.id);
+  const product = products.find((item) => String(item.id) === productId);
 
   if (!product) {
-    notFound();
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-10" dir="rtl">
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-center">
+          <h1 className="text-xl font-bold text-zinc-800">محصول پیدا نشد</h1>
+          <p className="mt-2 text-zinc-500">شناسه محصول: {productId}</p>
+          <Link href="/" className="mt-4 inline-block text-red-500">
+            بازگشت به خانه
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (

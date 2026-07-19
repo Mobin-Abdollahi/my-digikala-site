@@ -42,7 +42,7 @@ export default function CartPage() {
                   />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-800 line-clamp-2 max-w-[300px]">{item.title}</h3>
+                  <h3 className="text-sm font-bold text-gray-800 line-clamp-2 max-w-75">{item.title}</h3>
                   <p className="mt-2 text-red-600 font-bold">{formatPrice(item.price)} تومان</p>
                 </div>
               </div>

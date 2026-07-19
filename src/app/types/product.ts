@@ -6,4 +6,5 @@ export interface Product {
   brand?: string;    // علامت سوال اضافه شد
   discount?: number; // علامت سوال اضافه شد
   image?: string;
+  category: string;
 }

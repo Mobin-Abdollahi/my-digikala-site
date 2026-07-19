@@ -2,9 +2,11 @@
 "use client";
 
 import Link from "next/link";
-import { useCart } from "../../store/cart-context";
-import type { Product } from "../../types/product";
-import { formatPrice } from "../../utils/formatPrice";
+import { useCart } from ".././store/cart-context";
+import type { Product } from ".././types/product";
+import { formatPrice } from ".././utils/formatPrice";
+import FallbackImage from ".././components/common/FallbackImage";
+
 
 type ProductCardProps = {
   product: Product;
@@ -17,17 +19,17 @@ export default function ProductCard({ product }: ProductCardProps) {
     <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md">
       <Link href={`/product/${product.id}`} className="block">
         <div className="aspect-square w-full bg-zinc-100">
-          {product.image ? (
-            <img
-              src={product.image}
-              alt={product.title}
-              className="h-full w-full object-contain p-4"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-sm text-zinc-400">
-              تصویری موجود نیست
-            </div>
-          )}
+         {product.image ? (
+          <FallbackImage
+            src={product.image}
+            alt={product.title}
+            className="h-full w-full object-contain p-4"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-sm text-zinc-400">
+            تصویری موجود نیست
+          </div>
+        )}
         </div>
 
         <div className="space-y-3 p-4">
