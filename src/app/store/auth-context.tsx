@@ -1,46 +1,57 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
-interface User {
-  phoneNumber: string;
-  name?: string;
-}
+type User = {
+  name: string;
+  phone: string;
+};
 
-interface AuthContextType {
+type AuthContextType = {
   user: User | null;
   isLoggedIn: boolean;
-  login: (phoneNumber: string, name?: string) => void;
+  login: (user: User) => void;
   logout: () => void;
-}
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const AUTH_KEY = "digikala-auth-user";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  // بررسی وضعیت ورود قبلی کاربر هنگام بالا آمدن سایت
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
+    const savedUser = localStorage.getItem(AUTH_KEY);
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem(AUTH_KEY);
+      }
     }
   }, []);
 
-  const login = (phoneNumber: string, name?: string) => {
-    const newUser = { phoneNumber, name: name || "کاربر دیجی‌کالا" };
-    setUser(newUser);
-    localStorage.setItem("user", JSON.stringify(newUser));
+  const login = (nextUser: User) => {
+    setUser(nextUser);
+    localStorage.setItem(AUTH_KEY, JSON.stringify(nextUser));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem(AUTH_KEY);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn: !!user, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoggedIn: !!user,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -49,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 }

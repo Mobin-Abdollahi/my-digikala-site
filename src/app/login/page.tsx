@@ -1,68 +1,73 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../store/auth-context";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import Link from "next/link";
 
 export default function LoginPage() {
-  const [phone, setPhone] = useState("");
-  const [name, setName] = useState("");
-  const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { login } = useAuth();
+
+  const redirectTo = searchParams.get("redirect") || "/";
+
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (phone.length < 11) {
-      toast.error("لطفاً شماره موبایل معتبر وارد کنید");
+
+    if (!phone.trim()) {
+      toast.error("شماره موبایل را وارد کنید");
       return;
     }
-    
-    login(phone, name);
-    toast.success("خوش آمدید!");
-    router.push("/"); // برگشت به صفحه اصلی
+
+    login({
+      name: name.trim() || "کاربر دیجی‌کالا",
+      phone: phone.trim(),
+    });
+
+    toast.success("ورود با موفقیت انجام شد");
+    router.replace(redirectTo);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4" dir="rtl">
-      <div className="w-full max-w-md rounded-2xl border bg-white p-8 shadow-sm">
-        <div className="flex flex-col items-center mb-8">
-          <Link href="/" className="text-3xl font-extrabold text-red-500 tracking-wider">
-            digikala
-          </Link>
-          <h2 className="mt-4 text-xl font-bold text-gray-700">ورود | ثبت‌نام</h2>
-        </div>
+    <div className="mx-auto max-w-7xl px-4 py-10" dir="rtl">
+      <div className="mx-auto max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <h1 className="text-2xl font-bold text-zinc-800">ورود / ثبت‌نام</h1>
+        <p className="mt-2 text-sm text-zinc-500">
+          برای ادامه خرید، لطفا اطلاعات خود را وارد کنید.
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-sm text-gray-600 mb-1">نام و نام خانوادگی (اختیاری)</label>
+            <label className="mb-2 block text-sm text-zinc-600">نام</label>
             <input
-              type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="مثلا: علی علوی"
-              className="w-full rounded-lg border p-3 outline-none focus:border-red-500"
+              type="text"
+              placeholder="اختیاری"
+              className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-red-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600 mb-1">شماره موبایل</label>
+            <label className="mb-2 block text-sm text-zinc-600">شماره موبایل</label>
             <input
-              type="text"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="09123456789"
-              required
-              className="w-full rounded-lg border p-3 text-left outline-none focus:border-red-500"
+              type="tel"
+              placeholder="09xxxxxxxxx"
+              className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-red-500"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-red-500 py-3 font-bold text-white hover:bg-red-600 transition-colors"
+            className="w-full rounded-xl bg-red-500 px-4 py-3 font-medium text-white transition hover:bg-red-600"
           >
-            ورود به دیجی‌کالا
+            ورود
           </button>
         </form>
       </div>
