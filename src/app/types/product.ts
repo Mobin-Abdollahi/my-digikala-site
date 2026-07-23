@@ -1,10 +1,11 @@
 export interface Product {
-  id: number;
+  id: string | number;
   title: string;
   price: number;
-  rating: number;
-  brand?: string;    // علامت سوال اضافه شد
-  discount?: number; // علامت سوال اضافه شد
-  image?: string;
+  image: string;
   category: string;
+  rating: number;
+  discount?: number; // علامت سوال یعنی اختیاری است
+  description?: string; // اضافه شد
+  specs?: { label: string; value: string }[]; // اضافه شد
 }

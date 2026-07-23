@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
@@ -6,6 +5,7 @@ import { useCart } from ".././store/cart-context";
 import type { Product } from ".././types/product";
 import { formatPrice } from ".././utils/formatPrice";
 import FallbackImage from ".././components/common/FallbackImage";
+import toast from 'react-hot-toast';
 
 
 type ProductCardProps = {
@@ -14,6 +14,22 @@ type ProductCardProps = {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    toast.success(`${product.title} به سبد خرید اضافه شد!`, {
+      style: {
+        border: '1px solid #10B981',
+        padding: '16px',
+        color: '#065F46',
+        fontFamily: 'vazir, tahoma, sans-serif',
+      },
+      iconTheme: {
+        primary: '#10B981',
+        secondary: '#FFFAEE',
+      },
+    });
+  };
 
   return (
     <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:shadow-md">
@@ -49,8 +65,9 @@ export default function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       <div className="p-4 pt-0">
+        {/* تغییر از addToCart به handleAddToCart برای اجرای نوتیفیکیشن */}
         <button
-          onClick={() => addToCart(product)}
+          onClick={handleAddToCart}
           className="w-full rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
         >
           افزودن به سبد

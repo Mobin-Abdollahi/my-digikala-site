@@ -4,6 +4,7 @@
 import { useCart } from "../store/cart-context";
 import { formatPrice } from "../utils/formatPrice";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function CartPage() {
   const { items, totalItems, increaseQuantity, decreaseQuantity, removeFromCart } = useCart();
@@ -11,10 +12,10 @@ export default function CartPage() {
   // محاسبه قیمت کل با در نظر گرفتن تعداد هر محصول
   const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  // اگر سبد خرید خالی بود این بخش نمایش داده شود
+  // اگر سبد خرید خالی بود
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
+      <div className="flex flex-col items-center justify-center py-20 gap-4" dir="rtl">
         <div className="text-6xl text-gray-300">🛒</div>
         <h2 className="text-xl font-bold text-gray-600">سبد خرید شما فعلاً خالی است!</h2>
         <Link href="/" className="rounded-lg bg-red-500 px-6 py-2 text-white hover:bg-red-600 transition-all">
@@ -34,15 +35,18 @@ export default function CartPage() {
           {items.map((item) => (
             <div key={item.id} className="flex flex-col sm:flex-row items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
               <div className="flex items-center gap-6">
-                <div className="h-24 w-24 shrink-0">
-                  <img 
-                    src={item.image} 
+                <div className="relative h-24 w-24 shrink-0">
+                  <Image 
+                    src={item.image || "/images/placeholder.png"}
                     alt={item.title} 
-                    className="h-full w-full object-contain" 
+                    fill
+                    className="object-contain" 
+                    priority={true}
                   />
                 </div>
+
                 <div>
-                  <h3 className="text-sm font-bold text-gray-800 line-clamp-2 max-w-75">{item.title}</h3>
+                  <h3 className="text-sm font-bold text-gray-800 line-clamp-2 max-w-xs">{item.title}</h3>
                   <p className="mt-2 text-red-600 font-bold">{formatPrice(item.price)} تومان</p>
                 </div>
               </div>
@@ -51,14 +55,14 @@ export default function CartPage() {
                 {/* کنترلر تعداد */}
                 <div className="flex items-center gap-4 border rounded-xl px-3 py-1 bg-gray-50">
                   <button 
-                    onClick={() => increaseQuantity(item.id)} 
+                    onClick={() => increaseQuantity(Number(item.id))} 
                     className="text-2xl text-red-500 font-bold hover:scale-110 transition-transform"
                   >
                     +
                   </button>
                   <span className="text-lg font-medium w-4 text-center">{item.quantity}</span>
                   <button 
-                    onClick={() => decreaseQuantity(item.id)} 
+                    onClick={() => decreaseQuantity(Number(item.id))} 
                     className="text-2xl text-red-500 font-bold hover:scale-110 transition-transform"
                   >
                     -
@@ -67,7 +71,7 @@ export default function CartPage() {
                 
                 {/* دکمه حذف */}
                 <button 
-                  onClick={() => removeFromCart(item.id)}
+                  onClick={() => removeFromCart(Number(item.id))}
                   className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                   title="حذف از سبد"
                 >
@@ -97,9 +101,13 @@ export default function CartPage() {
             <span>{formatPrice(totalPrice)} تومان</span>
           </div>
 
-          <button className="w-full rounded-xl bg-red-500 py-4 font-bold text-white shadow-lg shadow-red-200 hover:bg-red-600 transition-all active:scale-95">
+          {/* دکمه ثبت سفارش به صورت لینک به صفحه چک‌اوت */}
+          <Link 
+            href="/checkout" 
+            className="block w-full text-center rounded-xl bg-red-500 py-4 font-bold text-white shadow-lg shadow-red-200 hover:bg-red-600 transition-all active:scale-95"
+          >
             ثبت سفارش و ادامه
-          </button>
+          </Link>
           
           <p className="mt-4 text-[10px] text-gray-400 text-center">
             هزینه ارسال بر اساس آدرس شما در مراحل بعد محاسبه خواهد شد.
