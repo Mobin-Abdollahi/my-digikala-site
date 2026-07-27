@@ -9,8 +9,9 @@ export type CartState = {
 };
 
 export type CartAction =
-  | { type: "ADD_TO_CART"; payload: Product }
+  | { type: "ADD_TO_CART"; payload: { product: Product | CartItem; quantity: number } }
   | { type: "REMOVE_FROM_CART"; payload: number }
   | { type: "INCREASE_QUANTITY"; payload: number }
   | { type: "DECREASE_QUANTITY"; payload: number }
-  | { type: "CLEAR_CART" };
+  | { type: "CLEAR_CART" }
+  | { type: "SET_CART"; payload: CartItem[] };

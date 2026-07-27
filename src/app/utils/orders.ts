@@ -20,7 +20,7 @@ function readOrders(): Order[] {
       return [];
     }
 
-    return parsedOrders;
+    return parsedOrders as Order[];
   } catch {
     localStorage.removeItem(ORDERS_KEY);
     return [];
@@ -39,8 +39,12 @@ export function getOrders(): Order[] {
   return readOrders();
 }
 
-export function getOrdersByUserPhone(phone: string): Order[] {
-  return readOrders().filter((order) => order.userPhone === phone);
+export function getOrdersByUserPhone(userPhone: string): Order[] {
+  return readOrders().filter((order) => order.userPhone === userPhone);
+}
+
+export function getOrderById(orderId: string): Order | null {
+  return readOrders().find((order) => order.id === orderId) ?? null;
 }
 
 export function saveOrder(order: Order) {

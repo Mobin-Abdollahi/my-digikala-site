@@ -2,20 +2,26 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "../../store/auth-context";
 import { useCart } from "../../store/cart-context";
 import { isAdminPhone } from "../../utils/auth";
 
+const menuItems = [
+  { href: "/categories", label: "دسته بندی کالاها" },
+  { href: "/amazing-offers", label: "شگفت‌انگیزها" },
+  { href: "/supermarket", label: "سوپرمارکت" },
+  { href: "/offers", label: "تخفیف‌ها و پیشنهادها" },
+];
 
 export default function Navbar() {
   const { totalItems } = useCart();
   const { user, isLoggedIn, logout } = useAuth();
   const isAdmin = isAdminPhone(user?.phone);
 
-
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const currentSearch = searchParams.get("search") || "";
@@ -84,17 +90,39 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-4">
-             {isLoggedIn && (
-        <div className="flex items-center gap-3">
-          <Link href="/profile">پروفایل</Link>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/profile"
+                  className="text-sm font-medium text-gray-700 hover:text-red-500"
+                >
+                  پروفایل
+                </Link>
 
-          {isAdmin && (
-            <Link href="/admin/orders">پنل ادمین</Link>
-          )}
+                {isAdmin ? (
+                  <Link
+                    href="/admin/orders"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    پنل ادمین
+                  </Link>
+                ) : null}
 
-          <button onClick={handleLogout}>خروج</button>
-        </div>
-      )}
+                <button
+                  onClick={handleLogout}
+                  className="text-sm font-medium text-gray-700 hover:text-red-500"
+                >
+                  خروج
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="text-sm font-medium text-gray-700 hover:text-red-500"
+              >
+                ورود | ثبت‌نام
+              </Link>
+            )}
 
             <span className="h-6 w-px bg-gray-200"></span>
 
@@ -110,18 +138,23 @@ export default function Navbar() {
         </div>
 
         <div className="hidden h-10 items-center gap-6 text-sm text-gray-600 md:flex">
-          <span className="cursor-pointer transition-colors hover:text-red-500">
-            دسته بندی کالاها
-          </span>
-          <span className="cursor-pointer transition-colors hover:text-red-500">
-            شگفت‌انگیزها
-          </span>
-          <span className="cursor-pointer transition-colors hover:text-red-500">
-            سوپرمارکت
-          </span>
-          <span className="cursor-pointer transition-colors hover:text-red-500">
-            تخفیف‌ها و پیشنهادها
-          </span>
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={
+                  isActive
+                    ? "font-medium text-red-500"
+                    : "transition-colors hover:text-red-500"
+                }
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </nav>

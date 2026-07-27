@@ -1,3 +1,4 @@
+import type { CartItem } from "./cart";
 export type OrderStatus = "pending" | "processing" | "shipped" | "delivered";
 
 export interface OrderItem {
@@ -8,14 +9,14 @@ export interface OrderItem {
   image?: string;
 }
 
-export interface Order {
+export type Order = {
   id: string;
   userPhone: string;
-  items: OrderItem[];
-  totalPrice: number;
   receiverName: string;
   phone: string;
   address: string;
-  createdAt: string;
+  items: CartItem[];
+  totalPrice: number;
   status: OrderStatus;
-}
+  createdAt: string;
+};

@@ -27,21 +27,23 @@ export default function ProfilePage() {
   }, [user]);
 
   const handleReorder = (items: Order["items"]) => {
-    items.forEach((item) => {
-      for (let i = 0; i < item.quantity; i += 1) {
-        addToCart({
-          id: item.id,
-          title: item.title,
-          price: item.price,
-          image: item.image || "/images/product-placeholder.png",
-          category: "",
-          rating: 0,
-        });
-      }
-    });
+  items.forEach((item) => {
+    addToCart(
+      {
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        image: item.image || "/images/product-placeholder.png",
+        category: "",
+        rating: 0,
+      },
+      item.quantity
+    );
+  });
 
-    router.push("/cart");
-  };
+  router.push("/cart");
+};
+
 
   if (!isLoggedIn || !user) {
     return null;
