@@ -1,5 +1,7 @@
-import ProductCard from "../../product/productCard";
-import { Product } from "../../types/product";
+"use client";
+
+import ProductCard from "@/app/product/productCard";
+import type { Product } from "@/app/types/product";
 
 type ProductGridProps = {
   products: Product[];
@@ -8,11 +10,11 @@ type ProductGridProps = {
 
 export default function ProductGrid({
   products,
-  emptyMessage = "محصولی یافت نشد.",
+  emptyMessage = "محصولی پیدا نشد.",
 }: ProductGridProps) {
-  if (!products.length) {
+  if (products.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center text-gray-500">
+      <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center text-gray-500">
         {emptyMessage}
       </div>
     );

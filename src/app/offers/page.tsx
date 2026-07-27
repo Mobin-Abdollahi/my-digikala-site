@@ -4,7 +4,7 @@ import ProductGrid from "@/app/components/product/ProductGrid";
 import { products } from "@/app/data/products";
 
 export default function OffersPage() {
-  const sortedProducts = [...products]
+  const offerProducts = [...products]
     .filter((product) => (product.discount ?? 0) > 0)
     .sort((a, b) => (b.discount ?? 0) - (a.discount ?? 0));
 
@@ -18,7 +18,7 @@ export default function OffersPage() {
       </section>
 
       <ProductGrid
-        products={sortedProducts}
+        products={offerProducts}
         emptyMessage="فعلاً پیشنهادی برای نمایش وجود ندارد."
       />
     </main>

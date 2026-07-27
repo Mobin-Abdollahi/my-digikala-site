@@ -8,11 +8,11 @@ import { useAuth } from "../../store/auth-context";
 import { useCart } from "../../store/cart-context";
 import { isAdminPhone } from "../../utils/auth";
 
-const menuItems = [
-  { href: "/categories", label: "دسته بندی کالاها" },
-  { href: "/amazing-offers", label: "شگفت‌انگیزها" },
-  { href: "/supermarket", label: "سوپرمارکت" },
-  { href: "/offers", label: "تخفیف‌ها و پیشنهادها" },
+const categoryItems = [
+  { label: "موبایل", category: "موبایل" },
+  { label: "لپ‌تاپ", category: "لپ‌تاپ" },
+  { label: "لوازم جانبی", category: "لوازم جانبی" },
+  { label: "ساعت هوشمند", category: "ساعت هوشمند" },
 ];
 
 export default function Navbar() {
@@ -25,6 +25,7 @@ export default function Navbar() {
   const searchParams = useSearchParams();
 
   const currentSearch = searchParams.get("search") || "";
+  const currentCategory = searchParams.get("category") || "";
   const [searchValue, setSearchValue] = useState(currentSearch);
 
   useEffect(() => {
@@ -94,7 +95,7 @@ export default function Navbar() {
               <div className="flex items-center gap-3">
                 <Link
                   href="/profile"
-                  className="text-sm font-medium text-gray-700 hover:text-red-500"
+                  className="text-sm font-medium text-gray-700 transition-colors hover:text-red-500"
                 >
                   پروفایل
                 </Link>
@@ -102,15 +103,16 @@ export default function Navbar() {
                 {isAdmin ? (
                   <Link
                     href="/admin/orders"
-                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                    className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
                   >
                     پنل ادمین
                   </Link>
                 ) : null}
 
                 <button
+                  type="button"
                   onClick={handleLogout}
-                  className="text-sm font-medium text-gray-700 hover:text-red-500"
+                  className="text-sm font-medium text-gray-700 transition-colors hover:text-red-500"
                 >
                   خروج
                 </button>
@@ -118,7 +120,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="text-sm font-medium text-gray-700 hover:text-red-500"
+                className="text-sm font-medium text-gray-700 transition-colors hover:text-red-500"
               >
                 ورود | ثبت‌نام
               </Link>
@@ -138,23 +140,167 @@ export default function Navbar() {
         </div>
 
         <div className="hidden h-10 items-center gap-6 text-sm text-gray-600 md:flex">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href;
+          <div className="group relative">
+            <Link
+              href="/categories"
+              className={`flex items-center gap-1 transition-colors hover:text-red-500 ${
+                pathname === "/categories" ? "font-medium text-red-500" : ""
+              }`}
+            >
+              دسته‌بندی کالاها
+              <span className="text-xs">⌄</span>
+            </Link>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={
-                  isActive
-                    ? "font-medium text-red-500"
-                    : "transition-colors hover:text-red-500"
-                }
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+            <div className="invisible absolute right-0 top-full z-50 mt-2 w-190 rounded-2xl border border-gray-100 bg-white p-4 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
+              <div className="grid grid-cols-4 gap-4 text-sm">
+                <div className="space-y-3">
+                  <h4 className="font-bold text-gray-800">کالای دیجیتال</h4>
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      href="/categories?category=موبایل"
+                      className={`transition-colors hover:text-red-500 ${
+                        pathname === "/categories" && currentCategory === "موبایل"
+                          ? "font-medium text-red-500"
+                          : ""
+                      }`}
+                    >
+                      موبایل
+                    </Link>
+
+                    <Link
+                      href="/categories?category=لپ‌تاپ"
+                      className={`transition-colors hover:text-red-500 ${
+                        pathname === "/categories" && currentCategory === "لپ‌تاپ"
+                          ? "font-medium text-red-500"
+                          : ""
+                      }`}
+                    >
+                      لپ‌تاپ
+                    </Link>
+
+                    <Link
+                      href="/categories?category=ساعت هوشمند"
+                      className={`transition-colors hover:text-red-500 ${
+                        pathname === "/categories" && currentCategory === "ساعت هوشمند"
+                          ? "font-medium text-red-500"
+                          : ""
+                      }`}
+                    >
+                      ساعت هوشمند
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-bold text-gray-800">لوازم جانبی</h4>
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      href="/categories?category=لوازم جانبی"
+                      className={`transition-colors hover:text-red-500 ${
+                        pathname === "/categories" && currentCategory === "لوازم جانبی"
+                          ? "font-medium text-red-500"
+                          : ""
+                      }`}
+                    >
+                      لوازم جانبی
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-bold text-gray-800">دسترسی سریع</h4>
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      href="/categories"
+                      className={`transition-colors hover:text-red-500 ${
+                        pathname === "/categories" && !currentCategory
+                          ? "font-medium text-red-500"
+                          : ""
+                      }`}
+                    >
+                      همه محصولات
+                    </Link>
+
+                    <Link
+                      href="/amazing-offers"
+                      className="transition-colors hover:text-red-500"
+                    >
+                      شگفت‌انگیزها
+                    </Link>
+
+                    <Link
+                      href="/offers"
+                      className="transition-colors hover:text-red-500"
+                    >
+                      تخفیف‌ها و پیشنهادها
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-bold text-gray-800">محبوب</h4>
+                  <div className="flex flex-col gap-2">
+                    {categoryItems.map((item) => (
+                      <Link
+                        key={item.category}
+                        href={`/categories?category=${encodeURIComponent(
+                          item.category
+                        )}`}
+                        className={`transition-colors hover:text-red-500 ${
+                          pathname === "/categories" &&
+                          currentCategory === item.category
+                            ? "font-medium text-red-500"
+                            : ""
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+
+                    <Link
+                      href="/supermarket"
+                      className="transition-colors hover:text-red-500"
+                    >
+                      سوپرمارکت
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Link
+            href="/amazing-offers"
+            className={
+              pathname === "/amazing-offers"
+                ? "font-medium text-red-500"
+                : "transition-colors hover:text-red-500"
+            }
+          >
+            شگفت‌انگیزها
+          </Link>
+
+          <Link
+            href="/supermarket"
+            className={
+              pathname === "/supermarket"
+                ? "font-medium text-red-500"
+                : "transition-colors hover:text-red-500"
+            }
+          >
+            سوپرمارکت
+          </Link>
+
+          <Link
+            href="/offers"
+            className={
+              pathname === "/offers"
+                ? "font-medium text-red-500"
+                : "transition-colors hover:text-red-500"
+            }
+          >
+            تخفیف‌ها و پیشنهادها
+          </Link>
         </div>
       </div>
     </nav>
