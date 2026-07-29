@@ -5,7 +5,12 @@ export interface Product {
   image: string;
   category: string;
   rating: number;
-  discount?: number; // علامت سوال یعنی اختیاری است
-  description?: string; // اضافه شد
-  specs?: { label: string; value: string }[]; // اضافه شد
+  discount?: number;
+
+  description?: string;
+  specs?: { label: string; value: string }[];
+
+  // ✅ برای سوپرمارکت و بخش‌ها
+  tags?: ("new" | "bestSeller")[];
+  subcategory?: string; // مثل: نوشیدنی، لبنیات، تنقلات...
 }

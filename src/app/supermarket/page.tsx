@@ -1,220 +1,184 @@
-import Image from "next/image";
-import Link from "next/link";
-import { products } from "../data/products";
-import { formatPrice } from "../utils/formatPrice";
-import { Product } from "../types/product";
+"use client";
 
-const supermarketProducts = products.filter(
-  (product) => product.category === "سوپرمارکت"
-);
+import { useMemo } from "react";
+import ProductGrid from "@/app/components/product/ProductGrid";
+import ProductCard from "@/app/product/productCard";
+import { products } from "@/app/data/products";
+import type { Product } from "@/app/types/product";
 
-const freshCategories = [
-  { title: "نوشیدنی", image: "/images/categories/drinks.png" },
-  { title: "تنقلات", image: "/images/categories/snacks.png" },
-  { title: "صبحانه", image: "/images/categories/breakfast.png" },
-  { title: "مواد پروتئینی و نان‌مرغ", image: "/images/categories/protein.png" },
-  { title: "لبنیات", image: "/images/categories/dairy.png" },
-  { title: "شوینده", image: "/images/categories/cleaning.png" },
-  { title: "کالاهای اساسی و خوراکی", image: "/images/categories/grocery.png" },
-  { title: "افزودنی", image: "/images/categories/additives.png" },
+type CategoryShortcut = {
+  key: "drinks" | "dairy" | "snacks" | "essential";
+  label: string;
+  sectionId: string;
+  emoji?: string;
+  imageSrc?: string; // برای لبنیات یا هر دسته‌ای که خواستی
+};
+
+const shortcuts: CategoryShortcut[] = [
+  { key: "essential", label: "کالاهای اساسی", sectionId: "section-essential", emoji: "🧺" },
+  { key: "drinks", label: "نوشیدنی", sectionId: "section-drinks", emoji: "🥤" },
+  { key: "dairy", label: "لبنیات", sectionId: "section-dairy", emoji: "🥛" },
+  { key: "snacks", label: "تنقلات", sectionId: "section-snacks", emoji: "🍪" },
 ];
 
-function FreshMiniCard({ product }: { product: Product }) {
-  return (
-    <Link
-      href={`/product/${product.id}`}
-      className="flex min-w-42.5 max-w-42.5 flex-col rounded-2xl bg-white p-3 text-zinc-800 shadow-sm transition hover:shadow-md"
-    >
-      <div className="flex h-28 items-center justify-center">
-        <Image
-          src={product.image}
-          alt={product.title}
-          width={110}
-          height={110}
-          className="h-24 w-24 object-contain"
-        />
-      </div>
-
-      <h3 className="mt-2 line-clamp-2 min-h-10 text-xs leading-5">
-        {product.title}
-      </h3>
-
-      <div className="mt-auto pt-3">
-        <div className="flex items-center justify-between">
-          {product.discount ? (
-            <span className="rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-bold text-white">
-              %{product.discount}
-            </span>
-          ) : (
-            <span />
-          )}
-
-          <span className="text-sm font-bold">
-            {formatPrice(product.price)}
-          </span>
-        </div>
-      </div>
-    </Link>
-  );
+function scrollToSection(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function FreshHeroSection({ items }: { items: Product[] }) {
-  return (
-    <section className="mb-10 rounded-[28px] bg-emerald-600 p-5 shadow-lg">
-      <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
-        <div className="flex flex-col justify-between rounded-3xl bg-emerald-700 p-6 text-white">
-          <div>
-            <p className="text-sm text-emerald-100">سوپرمارکت دیجی‌کالا</p>
-            <h1 className="mt-3 text-3xl font-extrabold leading-snug">
-              شگفت‌انگیزهای منتخب
-            </h1>
-            <p className="mt-3 text-sm leading-7 text-emerald-50">
-              خرید سریع کالاهای روزمره، خوراکی‌ها، لبنیات، شوینده و محصولات تازه
-              با طراحی الهام‌گرفته از دیجی‌کالا فرش
-            </p>
-          </div>
-
-          <Link
-            href="/supermarket"
-            className="mt-6 inline-flex w-fit items-center justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-emerald-700"
-          >
-            مشاهده همه
-          </Link>
-        </div>
-
-        <div className="overflow-x-auto">
-          <div className="flex gap-3 pb-2">
-            {items.map((product) => (
-              <FreshMiniCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FreshCategoryGrid() {
-  return (
-    <section className="mb-10">
-      <h2 className="mb-6 text-center text-2xl font-bold text-zinc-800">
-        خرید بر اساس دسته‌بندی
-      </h2>
-
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
-        {freshCategories.map((category) => (
-          <div
-            key={category.title}
-            className="rounded-2xl border border-zinc-200 bg-white p-4 text-center shadow-sm"
-          >
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
-              <Image
-                src={category.image}
-                alt={category.title}
-                width={48}
-                height={48}
-                className="h-12 w-12 object-contain"
-              />
-            </div>
-            <p className="mt-3 text-sm font-medium text-zinc-800">
-              {category.title}
-            </p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function RankedRow({
-  product,
-  index,
-}: {
-  product: Product;
-  index: number;
-}) {
-  return (
-    <Link
-      href={`/product/${product.id}`}
-      className="flex items-center gap-3 rounded-2xl p-3 transition hover:bg-zinc-50"
-    >
-      <div className="w-8 text-center text-2xl font-extrabold text-emerald-600">
-        {index}
-      </div>
-
-      <div className="flex h-16 w-16 items-center justify-center">
-        <Image
-          src={product.image}
-          alt={product.title}
-          width={64}
-          height={64}
-          className="h-14 w-14 object-contain"
-        />
-      </div>
-
-      <div className="flex-1">
-        <h3 className="line-clamp-2 text-sm leading-6 text-zinc-700">
-          {product.title}
-        </h3>
-        <div className="mt-1 flex items-center justify-between">
-          <span className="text-sm font-bold text-zinc-900">
-            {formatPrice(product.price)}
-          </span>
-
-          {product.discount ? (
-            <span className="rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-bold text-white">
-              %{product.discount}
-            </span>
-          ) : null}
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function RankedSection({
-  title,
-  items,
-}: {
-  title: string;
-  items: Product[];
-}) {
-  return (
-    <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-zinc-800">{title}</h2>
-        <Link href="/supermarket" className="text-sm font-medium text-emerald-600">
-          مشاهده همه
-        </Link>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        {items.map((product, index) => (
-          <RankedRow
-            key={product.id}
-            product={product}
-            index={index + 1}
-          />
-        ))}
-      </div>
-    </section>
-  );
+function byRatingDesc(a: Product, b: Product) {
+  return (b.rating ?? 0) - (a.rating ?? 0);
 }
 
 export default function SupermarketPage() {
-  const heroProducts = supermarketProducts.slice(0, 6);
-  const bestSelling = supermarketProducts.slice(0, 6);
-  const newestProducts = supermarketProducts.slice(6, 12);
+  const supermarketProducts = useMemo(
+    () => products.filter((p) => p.category === "سوپرمارکت"),
+    []
+  );
+
+  const bestSellers = useMemo(() => {
+    const tagged = supermarketProducts.filter((p) => p.tags?.includes("bestSeller"));
+    const list = tagged.length ? tagged : [...supermarketProducts].sort(byRatingDesc);
+    return list.slice(0, 10);
+  }, [supermarketProducts]);
+
+  const newProducts = useMemo(() => {
+    const tagged = supermarketProducts.filter((p) => p.tags?.includes("new"));
+    const list = tagged.length ? tagged : [...supermarketProducts].reverse();
+    return list.slice(0, 10);
+  }, [supermarketProducts]);
+
+  const drinks = useMemo(
+    () => supermarketProducts.filter((p) => p.subcategory === "نوشیدنی"),
+    [supermarketProducts]
+  );
+  const dairy = useMemo(
+    () => supermarketProducts.filter((p) => p.subcategory === "لبنیات"),
+    [supermarketProducts]
+  );
+  const snacks = useMemo(
+    () => supermarketProducts.filter((p) => p.subcategory === "تنقلات"),
+    [supermarketProducts]
+  );
+  const essential = useMemo(
+    () => supermarketProducts.filter((p) => p.subcategory === "کالاهای اساسی"),
+    [supermarketProducts]
+  );
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8">
-      <FreshHeroSection items={heroProducts} />
-      <FreshCategoryGrid />
+      {/* Hero */}
+      <section className="mb-6 rounded-3xl bg-linear-to-l from-emerald-600 to-lime-500 p-6 text-white">
+        <h1 className="mb-2 text-2xl font-bold">سوپرمارکت</h1>
+        <p className="text-sm text-white/90">خرید سریع و آسان برای کالاهای روزمره.</p>
+      </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <RankedSection title="پرفروش‌ترین کالاها" items={bestSelling} />
-        <RankedSection title="محصولات جدید" items={newestProducts} />
-      </div>
+      {/* خرید بر اساس دسته‌بندی (همون استایل کارت‌مانند) */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-center text-base font-bold text-zinc-800">
+          خرید بر اساس دسته‌بندی
+        </h2>
+
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-4">
+          {shortcuts.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => scrollToSection(s.sectionId)}
+              className="group rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="mx-auto flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-zinc-50 ring-1 ring-zinc-100">
+                {s.imageSrc ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.imageSrc}
+                    alt={s.label}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      // اگر تصویر موجود نبود، تصویر را پنهان می‌کنیم تا emoji بیاید (fallback ساده)
+                      (e.currentTarget as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                ) : null}
+
+                {/* fallback emoji (اگر image نبود یا لود نشد) */}
+                <span
+                  className="text-2xl"
+                  aria-hidden="true"
+                  // اگر imageSrc داریم ولی نمایش داده نشد، این همچنان دیده می‌شود
+                >
+                  {s.emoji ?? "🛒"}
+                </span>
+              </div>
+
+              <div className="mt-2 text-sm font-medium text-zinc-800">{s.label}</div>
+              <div className="mt-1 text-[11px] text-zinc-500 group-hover:text-zinc-600">
+                مشاهده محصولات
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Best sellers */}
+      <section className="mb-10">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-zinc-800">پرفروش‌ترین کالاها</h2>
+        </div>
+
+        {bestSellers.length ? (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {bestSellers.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
+            هنوز محصولی برای نمایش پرفروش‌ترین‌ها نداریم.
+          </div>
+        )}
+      </section>
+
+      {/* New products */}
+      <section className="mb-10">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-zinc-800">محصولات جدید</h2>
+        </div>
+
+        {newProducts.length ? (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {newProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
+            هنوز محصولی برای نمایش محصولات جدید نداریم.
+          </div>
+        )}
+      </section>
+
+      {/* Category Sections */}
+      <section id="section-drinks" className="scroll-mt-24">
+        <h2 className="mb-4 text-lg font-bold text-zinc-800">نوشیدنی</h2>
+        <ProductGrid products={drinks} emptyMessage="محصولی در دسته نوشیدنی نداریم." />
+      </section>
+
+      <section id="section-dairy" className="mt-12 scroll-mt-24">
+        <h2 className="mb-4 text-lg font-bold text-zinc-800">لبنیات</h2>
+        <ProductGrid products={dairy} emptyMessage="محصولی در دسته لبنیات نداریم." />
+      </section>
+
+      <section id="section-snacks" className="mt-12 scroll-mt-24">
+        <h2 className="mb-4 text-lg font-bold text-zinc-800">تنقلات</h2>
+        <ProductGrid products={snacks} emptyMessage="محصولی در دسته تنقلات نداریم." />
+      </section>
+
+      <section id="section-essential" className="mt-12 scroll-mt-24">
+        <h2 className="mb-4 text-lg font-bold text-zinc-800">کالاهای اساسی</h2>
+        <ProductGrid products={essential} emptyMessage="محصولی در دسته کالاهای اساسی نداریم." />
+      </section>
     </main>
   );
 }
