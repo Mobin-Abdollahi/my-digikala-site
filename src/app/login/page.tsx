@@ -10,7 +10,14 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const { login } = useAuth();
 
-  const redirectTo = searchParams.get("redirect") || "/";
+  const rawRedirectTo = searchParams.get("redirect");
+
+  const redirectTo =
+    rawRedirectTo &&
+    rawRedirectTo.startsWith("/") &&
+    !rawRedirectTo.startsWith("//")
+      ? rawRedirectTo
+      : "/";
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");

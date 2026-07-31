@@ -8,6 +8,7 @@ import { useAuth } from "../../store/auth-context";
 import { useCart } from "../../store/cart-context";
 import { isAdminPhone } from "../../utils/auth";
 
+// آیتم "طلا و نقره دیجیتال" حذف شد چون یک Category محصول نیست و مسیر مستقل دارد
 const categoryItems = [
   { label: "موبایل", category: "موبایل" },
   { label: "لپ‌تاپ", category: "لپ‌تاپ" },
@@ -256,6 +257,16 @@ export default function Navbar() {
                         {item.label}
                       </Link>
                     ))}
+                    
+                    {/* لینک مستقل طلا و نقره در منوی کشویی */}
+                    <Link
+                      href="/gold"
+                      className={`transition-colors hover:text-red-500 ${
+                        pathname === "/gold" ? "font-medium text-red-500" : ""
+                      }`}
+                    >
+                      طلا و نقره دیجیتال
+                    </Link>
 
                     <Link
                       href="/supermarket"
@@ -300,6 +311,17 @@ export default function Navbar() {
             }
           >
             تخفیف‌ها و پیشنهادها
+          </Link>
+
+          {/* لینک اصلی طلا و نقره در نوار ناوبری */}
+          <Link
+            href="/gold"
+            className={`flex items-center gap-2 transition-colors hover:text-red-500 ${
+              pathname === "/gold" ? "font-medium text-red-500" : ""
+            }`}
+          >
+            <span className="h-2 w-2 animate-pulse rounded-full bg-yellow-400"></span>
+            طلا و نقره دیجیتال
           </Link>
         </div>
       </div>
