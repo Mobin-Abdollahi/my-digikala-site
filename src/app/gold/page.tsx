@@ -17,6 +17,7 @@ import {
 import GoldPriceChart from "../components/gold/GoldPriceChart";
 import MobileAnimation from "../components/gold/MobileAnimation";
 import { useAuth } from "../store/auth-context";
+import { saveOrder } from "../utils/orders";
 
 const GOLD_PRICE_PER_GRAM = 7450000;
 const QUICK_AMOUNTS = [0.5, 1, 2, 5];
@@ -25,26 +26,28 @@ const features = [
   {
     title: "امکان خرید طلا",
     description: "به مقدار دلخواه",
-    icon: <Sparkles size={24} />,
+    icon: <Sparkles size={22} />,
   },
   {
     title: "حفظ ارزش سرمایه",
     description: "در برابر تورم",
-    icon: <TrendingUp size={24} />,
+    icon: <TrendingUp size={22} />,
   },
   {
     title: "حذف ریسک نگهداری",
     description: "طلای فیزیکی",
-    icon: <ShieldCheck size={24} />,
+    icon: <ShieldCheck size={22} />,
   },
 ];
 
 export default function GoldPage() {
   const router = useRouter();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
 
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [goldAmount, setGoldAmount] = useState("1");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const numericGoldAmount = Number(goldAmount);
 
@@ -63,27 +66,64 @@ export default function GoldPage() {
       router.push("/login?redirect=/gold");
       return;
     }
-
     setIsBuyModalOpen(true);
   };
 
   const handleConfirmPurchase = () => {
-    if (!isValidGoldAmount) {
-      toast.error("لطفاً مقدار معتبری وارد کنید (حداقل ۰.۱ گرم)");
+    if (!isLoggedIn || !user) {
+      toast.error("لطفاً ابتدا وارد حساب کاربری خود شوید.");
+      router.push("/login?redirect=/gold");
       return;
     }
 
-    toast.success(
-      `درخواست خرید ${numericGoldAmount.toLocaleString(
-        "fa-IR"
-      )} گرم طلا با موفقیت ثبت شد.`
-    );
+    if (!isValidGoldAmount) {
+      toast.error("لطفاً مقدار معتبری وارد کنید (حداقل ۰.۱ و حداکثر ۱۰۰ گرم)");
+      return;
+    }
 
-    setIsBuyModalOpen(false);
-    setGoldAmount("1");
+    try {
+      setIsSubmitting(true);
+
+      const orderId =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `gold-${Date.now()}`;
+
+      const goldOrder = {
+        id: orderId,
+        userPhone: user.phone,
+        receiverName: user.name || "خریدار طلا",
+        phone: user.phone,
+        address: "خرید طلای دیجیتال (تحویل موقت در کیف پول)",
+        items: [],
+        totalPrice,
+        status: "pending" as const,
+        createdAt: new Date().toISOString(),
+        orderType: "gold" as const,
+        goldWeight: numericGoldAmount,
+        goldPricePerGram: GOLD_PRICE_PER_GRAM,
+      };
+
+      saveOrder(goldOrder);
+
+      toast.success(
+        `سفارش خرید ${numericGoldAmount.toLocaleString(
+          "fa-IR"
+        )} گرم طلا با موفقیت ثبت شد.`
+      );
+
+      setIsBuyModalOpen(false);
+      setGoldAmount("1");
+      router.push(`/order-success?orderId=${orderId}`);
+    } catch {
+      toast.error("خطایی در ثبت سفارش رخ داد. لطفاً مجدداً تلاش کنید.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCloseModal = () => {
+    if (isSubmitting) return;
     setIsBuyModalOpen(false);
     setGoldAmount("1");
   };
@@ -121,12 +161,15 @@ export default function GoldPage() {
               <div className="mb-8 flex flex-wrap gap-3">
                 <button
                   onClick={handleBuyClick}
-                  className="rounded-2xl bg-yellow-500 px-6 py-3 text-sm font-bold text-black transition hover:bg-yellow-400"
+                  className="rounded-2xl bg-yellow-50 px-6 py-3 text-sm font-bold text-black transition hover:bg-yellow-400"
                 >
                   خرید طلا
                 </button>
 
-                <button className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10">
+                <button
+                  onClick={() => setIsDetailsModalOpen(true)}
+                  className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+                >
                   مشاهده جزئیات
                   <ChevronLeft size={18} />
                 </button>
@@ -257,40 +300,41 @@ export default function GoldPage() {
         </div>
       </section>
 
-      {/* Buy Modal */}
+      {/* Buy Modal - کوچک شده به max-w-sm و تراز کاملاً وسط با z-[999] */}
       {isBuyModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          className="fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black/60 p-4 overflow-y-auto"
           onClick={handleCloseModal}
         >
           <div
-            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+            className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl transition-all"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mb-5 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-black text-gray-900">خرید طلا</h2>
-                <p className="mt-1 text-xs text-gray-500">
+                <h2 className="text-base font-black text-gray-900">خرید طلا</h2>
+                <p className="mt-0.5 text-[11px] text-gray-500">
                   مقدار موردنظر خود را وارد کنید
                 </p>
               </div>
 
               <button
                 onClick={handleCloseModal}
-                className="rounded-full p-2 text-gray-500 transition hover:bg-gray-100"
+                disabled={isSubmitting}
+                className="rounded-full p-1.5 text-gray-500 transition hover:bg-gray-100"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="mb-4 rounded-2xl bg-yellow-50 p-4">
-              <div className="mb-1 text-xs text-gray-500">قیمت هر گرم</div>
-              <div className="text-lg font-bold text-gray-900">
+            <div className="mb-3.5 rounded-2xl bg-yellow-50/70 p-3">
+              <div className="text-[10px] text-gray-500">قیمت هر گرم</div>
+              <div className="text-base font-bold text-gray-900">
                 {GOLD_PRICE_PER_GRAM.toLocaleString("fa-IR")} تومان
               </div>
             </div>
 
-            <label className="mb-2 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-xs font-medium text-gray-700">
               مقدار طلا (گرم)
             </label>
 
@@ -299,39 +343,41 @@ export default function GoldPage() {
               min="0.1"
               max="100"
               step="0.1"
+              disabled={isSubmitting}
               value={goldAmount}
               onChange={(e) => setGoldAmount(e.target.value)}
-              className="w-full rounded-2xl border border-gray-200 px-4 py-3 outline-none transition focus:border-yellow-500"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-yellow-500"
               placeholder="مثلاً 1"
             />
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
               {QUICK_AMOUNTS.map((amount) => (
                 <button
                   key={amount}
+                  disabled={isSubmitting}
                   onClick={() => setGoldAmount(String(amount))}
-                  className="rounded-full border border-gray-200 px-4 py-2 text-sm text-gray-700 transition hover:border-yellow-500 hover:text-yellow-700"
+                  className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-700 transition hover:border-yellow-500 hover:text-yellow-700 disabled:opacity-50"
                 >
                   {amount.toLocaleString("fa-IR")} گرم
                 </button>
               ))}
             </div>
 
-            <div className="mt-5 rounded-2xl bg-gray-50 p-4">
-              <div className="mb-2 flex items-center justify-between text-sm">
+            <div className="mt-4 rounded-xl bg-gray-50 p-3 text-xs">
+              <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-gray-500">حداقل خرید</span>
-                <span className="font-medium text-gray-800">۰.۱ گرم</span>
+                <span className="font-semibold text-gray-800">۰.۱ گرم</span>
               </div>
 
-              <div className="mb-2 flex items-center justify-between text-sm">
+              <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-gray-500">حداکثر خرید</span>
-                <span className="font-medium text-gray-800">۱۰۰ گرم</span>
+                <span className="font-semibold text-gray-800">۱۰۰ گرم</span>
               </div>
 
-              <div className="mt-4 border-t border-gray-200 pt-4">
+              <div className="mt-2.5 border-t border-gray-200 pt-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">مبلغ نهایی</span>
-                  <span className="text-lg font-bold text-gray-900">
+                  <span className="text-gray-500">مبلغ نهایی</span>
+                  <span className="text-base font-bold text-gray-900">
                     {totalPrice.toLocaleString("fa-IR")} تومان
                   </span>
                 </div>
@@ -339,17 +385,65 @@ export default function GoldPage() {
             </div>
 
             {!isValidGoldAmount && (
-              <p className="mt-3 text-xs text-red-500">
-                مقدار واردشده باید بین ۰.۱ تا ۱۰۰ گرم باشد.
+              <p className="mt-2 text-[10px] text-red-500">
+                مقدار باید بین ۰.۱ تا ۱۰۰ گرم باشد.
               </p>
             )}
 
             <button
               onClick={handleConfirmPurchase}
-              disabled={!isValidGoldAmount}
-              className="mt-6 w-full rounded-2xl bg-yellow-500 px-4 py-3 text-sm font-bold text-black transition hover:bg-yellow-400 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+              disabled={!isValidGoldAmount || isSubmitting}
+              className="mt-5 w-full rounded-xl bg-yellow-500 py-2.5 text-xs font-bold text-black transition hover:bg-yellow-400 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
             >
-              تأیید خرید
+              {isSubmitting ? "در حال ثبت سفارش..." : "تأیید خرید"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Details Modal - کوچک شده به max-w-sm و تراز کاملاً وسط با z-[999] */}
+      {isDetailsModalOpen && (
+        <div
+          className="fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black/60 p-4 overflow-y-auto"
+          onClick={() => setIsDetailsModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-base font-black text-gray-900">جزئیات طلای دیجیتال</h2>
+              <button
+                onClick={() => setIsDetailsModalOpen(false)}
+                className="rounded-full p-1.5 text-gray-500 transition hover:bg-gray-100"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-right text-xs leading-6 text-gray-600">
+              <p>
+                خرید طلای دیجیتال ابزار مناسبی برای حفظ ارزش پول در برابر تورم و نوسانات بازار است. خرید شما مستقیماً با شمش طلای فیزیکی پشتیبانی می‌شود.
+              </p>
+              
+              <div className="rounded-xl bg-yellow-50/70 p-3">
+                <h3 className="mb-1.5 font-bold text-yellow-800 text-[11px]">ویژگی‌های اصلی سرویس:</h3>
+                <ul className="list-inside list-disc space-y-1 text-[10px] text-gray-700">
+                  <li>امکان شروع خرید با مبالغ خرد (از ۰.۱ گرم)</li>
+                  <li>تسویه سریع ریالی و آنلاین</li>
+                  <li>عدم وجود خطر سرقت و مفقودی طلای فیزیکی</li>
+                </ul>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setIsDetailsModalOpen(false);
+                handleBuyClick();
+              }}
+              className="mt-5 w-full rounded-xl bg-yellow-500 py-2.5 text-xs font-bold text-black transition hover:bg-yellow-400"
+            >
+              شروع فرآیند خرید طلا
             </button>
           </div>
         </div>

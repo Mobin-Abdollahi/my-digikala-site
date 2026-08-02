@@ -1,4 +1,6 @@
 export interface Product {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  oldPrice?: number;
   id: string | number;
   title: string;
   price: number;

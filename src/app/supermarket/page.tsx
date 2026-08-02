@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { ShoppingBasket, Zap, Leaf } from "lucide-react";
 import ProductGrid from "@/app/components/product/ProductGrid";
 import ProductCard from "@/app/product/productCard";
 import { products } from "@/app/data/products";
@@ -11,7 +12,7 @@ type CategoryShortcut = {
   label: string;
   sectionId: string;
   emoji?: string;
-  imageSrc?: string; // برای لبنیات یا هر دسته‌ای که خواستی
+  imageSrc?: string;
 };
 
 const shortcuts: CategoryShortcut[] = [
@@ -32,6 +33,7 @@ function byRatingDesc(a: Product, b: Product) {
 }
 
 export default function SupermarketPage() {
+  // فیلتر کردن کالاهای سوپرمارکتی بر اساس دسته فارسی ثبت‌شده در دیتابیس پروژه شما
   const supermarketProducts = useMemo(
     () => products.filter((p) => p.category === "سوپرمارکت"),
     []
@@ -67,16 +69,59 @@ export default function SupermarketPage() {
   );
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8">
-      {/* Hero */}
-      <section className="mb-6 rounded-3xl bg-linear-to-l from-emerald-600 to-lime-500 p-6 text-white">
-        <h1 className="mb-2 text-2xl font-bold">سوپرمارکت</h1>
-        <p className="text-sm text-white/90">خرید سریع و آسان برای کالاهای روزمره.</p>
+    <div className="min-h-screen bg-slate-50/30">
+      {/* Hero Section مدرن، تیره و شیک با تم سبز زمردی */}
+      <section className="relative overflow-hidden bg-[#121416] py-16 text-white md:py-24">
+        {/* المان‌های نوری گرادینت پس‌زمینه */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl" />
+          <div className="absolute bottom-0 left-0 h-80 w-80 rounded-full bg-green-400/5 blur-3xl" />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 text-right">
+          {/* Badge بالایی */}
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4 py-2 text-sm text-emerald-400">
+            <Leaf size={16} className="animate-pulse" />
+            خرید آسان و سریع کالاهای مصرفی
+          </div>
+
+          {/* عنوان اصلی */}
+          <h1 className="mb-6 text-4xl font-black leading-tight md:text-6xl">
+            سوپرمارکت
+            <span className="mx-3 text-emerald-400 underline decoration-white/10 underline-offset-8">
+              آنلاین دیجی‌کالا
+            </span>
+          </h1>
+
+          {/* توضیح */}
+          <p className="mb-10 max-w-2xl text-lg leading-8 text-gray-300">
+            هر آنچه برای خانه نیاز دارید؛ از مواد غذایی تازه تا لوازم بهداشتی و شوینده، با ارسال فوق‌سریع و تخفیف‌های ویژه روزانه درب منزل شما.
+          </p>
+
+          {/* کارت‌های مزایا شیشه‌ای (Glassmorphism) */}
+          <div className="flex flex-wrap justify-end gap-4">
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
+              <Zap className="text-yellow-400" size={32} />
+              <div className="text-right">
+                <div className="text-sm font-bold text-white">ارسال جت</div>
+                <div className="text-xs text-gray-400">تحویل در سریع‌ترین زمان</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
+              <ShoppingBasket className="text-emerald-400" size={32} />
+              <div className="text-right">
+                <div className="text-sm font-bold text-white">تنوع بی‌نظیر</div>
+                <div className="text-xs text-gray-400">بیش از ۱۰ هزار کالا</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* خرید بر اساس دسته‌بندی (همون استایل کارت‌مانند) */}
-      <section className="mb-10">
-        <h2 className="mb-4 text-center text-base font-bold text-zinc-800">
+      {/* بخش میانبرهای دسته‌بندی (کارت‌های کلیک‌شدنی برای اسکرول) */}
+      <section className="mx-auto max-w-7xl px-4 py-12">
+        <h2 className="mb-8 text-center text-lg font-black text-zinc-800">
           خرید بر اساس دسته‌بندی
         </h2>
 
@@ -86,9 +131,9 @@ export default function SupermarketPage() {
               key={s.key}
               type="button"
               onClick={() => scrollToSection(s.sectionId)}
-              className="group rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className="group rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs transition duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer"
             >
-              <div className="mx-auto flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-zinc-50 ring-1 ring-zinc-100">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-zinc-50 ring-1 ring-zinc-100 group-hover:bg-emerald-50 transition-colors">
                 {s.imageSrc ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -96,24 +141,17 @@ export default function SupermarketPage() {
                     alt={s.label}
                     className="h-full w-full object-cover"
                     onError={(e) => {
-                      // اگر تصویر موجود نبود، تصویر را پنهان می‌کنیم تا emoji بیاید (fallback ساده)
                       (e.currentTarget as HTMLImageElement).style.display = "none";
                     }}
                   />
                 ) : null}
-
-                {/* fallback emoji (اگر image نبود یا لود نشد) */}
-                <span
-                  className="text-2xl"
-                  aria-hidden="true"
-                  // اگر imageSrc داریم ولی نمایش داده نشد، این همچنان دیده می‌شود
-                >
+                <span className="text-2xl" aria-hidden="true">
                   {s.emoji ?? "🛒"}
                 </span>
               </div>
 
-              <div className="mt-2 text-sm font-medium text-zinc-800">{s.label}</div>
-              <div className="mt-1 text-[11px] text-zinc-500 group-hover:text-zinc-600">
+              <div className="mt-2 text-sm font-bold text-zinc-800 group-hover:text-emerald-600 transition-colors">{s.label}</div>
+              <div className="mt-1 text-[11px] text-zinc-400 group-hover:text-zinc-500">
                 مشاهده محصولات
               </div>
             </button>
@@ -121,64 +159,74 @@ export default function SupermarketPage() {
         </div>
       </section>
 
-      {/* Best sellers */}
-      <section className="mb-10">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-zinc-800">پرفروش‌ترین کالاها</h2>
-        </div>
-
-        {bestSellers.length ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {bestSellers.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+      <div className="mx-auto max-w-7xl px-4 py-6 space-y-16">
+        {/* پرفروش‌ترین‌ها */}
+        <section>
+          <div className="mb-6 flex items-center justify-between border-b pb-3">
+            <h2 className="text-xl font-black text-zinc-800">پرفروش‌ترین کالاها</h2>
           </div>
-        ) : (
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-            هنوز محصولی برای نمایش پرفروش‌ترین‌ها نداریم.
+
+          {bestSellers.length ? (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              {bestSellers.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500 text-center">
+              هنوز محصولی برای نمایش پرفروش‌ترین‌ها نداریم.
+            </div>
+          )}
+        </section>
+
+        {/* محصولات جدید */}
+        <section>
+          <div className="mb-6 flex items-center justify-between border-b pb-3">
+            <h2 className="text-xl font-black text-zinc-800">محصولات جدید</h2>
           </div>
-        )}
-      </section>
 
-      {/* New products */}
-      <section className="mb-10">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-zinc-800">محصولات جدید</h2>
-        </div>
+          {newProducts.length ? (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              {newProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-500 text-center">
+              هنوز محصولی برای نمایش محصولات جدید نداریم.
+            </div>
+          )}
+        </section>
 
-        {newProducts.length ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {newProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+        {/* گروه‌های تفکیک‌شده کالاها با لنگرهای اسکرول */}
+        <section id="section-drinks" className="scroll-mt-24">
+          <div className="mb-6 border-b pb-3">
+            <h2 className="text-xl font-black text-zinc-800">نوشیدنی</h2>
           </div>
-        ) : (
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-            هنوز محصولی برای نمایش محصولات جدید نداریم.
+          <ProductGrid products={drinks} emptyMessage="محصولی در دسته نوشیدنی نداریم." />
+        </section>
+
+        <section id="section-dairy" className="scroll-mt-24">
+          <div className="mb-6 border-b pb-3">
+            <h2 className="text-xl font-black text-zinc-800">لبنیات</h2>
           </div>
-        )}
-      </section>
+          <ProductGrid products={dairy} emptyMessage="محصولی در دسته لبنیات نداریم." />
+        </section>
 
-      {/* Category Sections */}
-      <section id="section-drinks" className="scroll-mt-24">
-        <h2 className="mb-4 text-lg font-bold text-zinc-800">نوشیدنی</h2>
-        <ProductGrid products={drinks} emptyMessage="محصولی در دسته نوشیدنی نداریم." />
-      </section>
+        <section id="section-snacks" className="scroll-mt-24">
+          <div className="mb-6 border-b pb-3">
+            <h2 className="text-xl font-black text-zinc-800">تنقلات</h2>
+          </div>
+          <ProductGrid products={snacks} emptyMessage="محصولی در دسته تنقلات نداریم." />
+        </section>
 
-      <section id="section-dairy" className="mt-12 scroll-mt-24">
-        <h2 className="mb-4 text-lg font-bold text-zinc-800">لبنیات</h2>
-        <ProductGrid products={dairy} emptyMessage="محصولی در دسته لبنیات نداریم." />
-      </section>
-
-      <section id="section-snacks" className="mt-12 scroll-mt-24">
-        <h2 className="mb-4 text-lg font-bold text-zinc-800">تنقلات</h2>
-        <ProductGrid products={snacks} emptyMessage="محصولی در دسته تنقلات نداریم." />
-      </section>
-
-      <section id="section-essential" className="mt-12 scroll-mt-24">
-        <h2 className="mb-4 text-lg font-bold text-zinc-800">کالاهای اساسی</h2>
-        <ProductGrid products={essential} emptyMessage="محصولی در دسته کالاهای اساسی نداریم." />
-      </section>
-    </main>
+        <section id="section-essential" className="scroll-mt-24">
+          <div className="mb-6 border-b pb-3">
+            <h2 className="text-xl font-black text-zinc-800">کالاهای اساسی</h2>
+          </div>
+          <ProductGrid products={essential} emptyMessage="محصولی در دسته کالاهای اساسی نداریم." />
+        </section>
+      </div>
+    </div>
   );
 }

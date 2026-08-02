@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import { CartProvider } from "./store/cart-context";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./store/auth-context";
-
-
 
 export const metadata: Metadata = {
   title: "My DigiKala Clone",
@@ -22,13 +21,18 @@ export default function RootLayout({
     <html lang="fa" dir="rtl">
       <body>
         <AuthProvider>
-        <CartProvider>
-          <Navbar />
-          <Toaster position="bottom-left" reverseOrder={false} />
-          {children}
-          <Footer />
-        </CartProvider>
-         </AuthProvider>
+          <CartProvider>
+            <Suspense fallback={<div className="h-16 bg-[#121212]" />}>
+              <Navbar />
+            </Suspense>
+
+            <Toaster position="bottom-left" reverseOrder={false} />
+
+            {children}
+
+            <Footer />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

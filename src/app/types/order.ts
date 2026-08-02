@@ -1,13 +1,12 @@
-import type { CartItem } from "./cart";
-export type OrderStatus = "pending" | "processing" | "shipped" | "delivered";
+import { CartItem } from "./cart";
 
-export interface OrderItem {
-  id: number;
-  title: string;
-  price: number;
-  quantity: number;
-  image?: string;
-}
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "shipped"
+  | "delivered";
+
+export type OrderType = "product" | "gold";
 
 export type Order = {
   id: string;
@@ -19,4 +18,11 @@ export type Order = {
   totalPrice: number;
   status: OrderStatus;
   createdAt: string;
+
+  // اطلاعات مربوط به نوع سفارش
+  orderType?: OrderType;
+
+  // اطلاعات اختصاصی خرید طلا
+  goldWeight?: number;
+  goldPricePerGram?: number;
 };

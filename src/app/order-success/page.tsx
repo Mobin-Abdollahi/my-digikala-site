@@ -1,11 +1,11 @@
 "use client";
 
+import { Suspense, useEffect } from "react";
 import Link from "next/link";
-import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../store/auth-context";
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
@@ -66,5 +66,17 @@ export default function OrderSuccessPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center px-4 py-10">
+        <p className="text-gray-500">در حال بارگذاری...</p>
+      </div>
+    }>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }
