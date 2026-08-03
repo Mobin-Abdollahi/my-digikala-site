@@ -8,7 +8,7 @@ import { useAuth } from "../../store/auth-context";
 import { useCart } from "../../store/cart-context";
 import { isAdminPhone } from "../../utils/auth";
 
-// آیتم "طلا و نقره دیجیتال" حذف شد چون یک Category محصول نیست و مسیر مستقل دارد
+// آیتم «طلا و نقره دیجیتال» Category محصول نیست و مسیر مستقل دارد.
 const categoryItems = [
   { label: "موبایل", category: "موبایل" },
   { label: "لپ‌تاپ", category: "لپ‌تاپ" },
@@ -19,7 +19,6 @@ const categoryItems = [
 export default function Navbar() {
   const { totalItems } = useCart();
   const { user, isLoggedIn, logout } = useAuth();
-  const isAdmin = isAdminPhone(user?.phone);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -27,11 +26,21 @@ export default function Navbar() {
 
   const currentSearch = searchParams.get("search") || "";
   const currentCategory = searchParams.get("category") || "";
+
   const [searchValue, setSearchValue] = useState(currentSearch);
+
+  // جلوگیری از Hydration Mismatch بین SSR و Client
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setSearchValue(currentSearch);
   }, [currentSearch]);
+
+  const isAdmin = isAdminPhone(user?.phone);
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -59,6 +68,7 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white" dir="rtl">
       <div className="mx-auto max-w-7xl px-4">
+        {/* ردیف اصلی */}
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="flex flex-1 items-center gap-4">
             <Link href="/" className="text-2xl font-black text-red-500">
@@ -82,7 +92,8 @@ export default function Navbar() {
                   <button
                     type="button"
                     onClick={handleClearSearch}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    aria-label="پاک کردن جستجو"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
                   >
                     ✕
                   </button>
@@ -92,7 +103,13 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-4">
-            {isLoggedIn ? (
+            {/* Hydration Gate برای بخش ورود و پروفایل */}
+            {!mounted ? (
+              <div
+                className="h-6 w-28 animate-pulse rounded-md bg-gray-200"
+                aria-label="در حال بارگذاری وضعیت حساب"
+              />
+            ) : isLoggedIn ? (
               <div className="flex items-center gap-3">
                 <Link
                   href="/profile"
@@ -101,13 +118,22 @@ export default function Navbar() {
                   پروفایل
                 </Link>
 
+                {/* لینک‌های مخصوص مدیریت (فقط برای ادمین) */}
                 {isAdmin ? (
-                  <Link
-                    href="/admin/orders"
-                    className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
-                  >
-                    پنل ادمین
-                  </Link>
+                  <div className="flex items-center gap-2 border-r border-gray-200 pr-3 mr-1">
+                    <Link
+                      href="/admin/products"
+                      className="rounded-md bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 transition-colors hover:bg-red-100 hover:text-red-700"
+                    >
+                      مدیریت محصولات
+                    </Link>
+                    <Link
+                      href="/admin/orders"
+                      className="text-xs font-medium text-blue-600 transition-colors hover:text-blue-700"
+                    >
+                      سفارش‌ها
+                    </Link>
+                  </div>
                 ) : null}
 
                 <button
@@ -127,11 +153,17 @@ export default function Navbar() {
               </Link>
             )}
 
-            <span className="h-6 w-px bg-gray-200"></span>
+            <span className="h-6 w-px bg-gray-200" />
 
-            <Link href="/cart" className="relative p-2">
+            <Link
+              href="/cart"
+              aria-label="سبد خرید"
+              className="relative p-2"
+            >
               <span className="text-2xl">🛒</span>
-              {totalItems > 0 ? (
+
+              {/* Hydration Gate برای badge سبد خرید */}
+              {mounted && totalItems > 0 ? (
                 <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                   {totalItems}
                 </span>
@@ -140,6 +172,7 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* نوار دسته‌بندی‌ها */}
         <div className="hidden h-10 items-center gap-6 text-sm text-gray-600 md:flex">
           <div className="group relative">
             <Link
@@ -156,11 +189,13 @@ export default function Navbar() {
               <div className="grid grid-cols-4 gap-4 text-sm">
                 <div className="space-y-3">
                   <h4 className="font-bold text-gray-800">کالای دیجیتال</h4>
+
                   <div className="flex flex-col gap-2">
                     <Link
                       href="/categories?category=موبایل"
                       className={`transition-colors hover:text-red-500 ${
-                        pathname === "/categories" && currentCategory === "موبایل"
+                        pathname === "/categories" &&
+                        currentCategory === "موبایل"
                           ? "font-medium text-red-500"
                           : ""
                       }`}
@@ -171,7 +206,8 @@ export default function Navbar() {
                     <Link
                       href="/categories?category=لپ‌تاپ"
                       className={`transition-colors hover:text-red-500 ${
-                        pathname === "/categories" && currentCategory === "لپ‌تاپ"
+                        pathname === "/categories" &&
+                        currentCategory === "لپ‌تاپ"
                           ? "font-medium text-red-500"
                           : ""
                       }`}
@@ -182,7 +218,8 @@ export default function Navbar() {
                     <Link
                       href="/categories?category=ساعت هوشمند"
                       className={`transition-colors hover:text-red-500 ${
-                        pathname === "/categories" && currentCategory === "ساعت هوشمند"
+                        pathname === "/categories" &&
+                        currentCategory === "ساعت هوشمند"
                           ? "font-medium text-red-500"
                           : ""
                       }`}
@@ -194,11 +231,13 @@ export default function Navbar() {
 
                 <div className="space-y-3">
                   <h4 className="font-bold text-gray-800">لوازم جانبی</h4>
+
                   <div className="flex flex-col gap-2">
                     <Link
                       href="/categories?category=لوازم جانبی"
                       className={`transition-colors hover:text-red-500 ${
-                        pathname === "/categories" && currentCategory === "لوازم جانبی"
+                        pathname === "/categories" &&
+                        currentCategory === "لوازم جانبی"
                           ? "font-medium text-red-500"
                           : ""
                       }`}
@@ -210,6 +249,7 @@ export default function Navbar() {
 
                 <div className="space-y-3">
                   <h4 className="font-bold text-gray-800">دسترسی سریع</h4>
+
                   <div className="flex flex-col gap-2">
                     <Link
                       href="/categories"
@@ -240,6 +280,7 @@ export default function Navbar() {
 
                 <div className="space-y-3">
                   <h4 className="font-bold text-gray-800">محبوب</h4>
+
                   <div className="flex flex-col gap-2">
                     {categoryItems.map((item) => (
                       <Link
@@ -257,8 +298,7 @@ export default function Navbar() {
                         {item.label}
                       </Link>
                     ))}
-                    
-                    {/* لینک مستقل طلا و نقره در منوی کشویی */}
+
                     <Link
                       href="/gold"
                       className={`transition-colors hover:text-red-500 ${
@@ -270,7 +310,11 @@ export default function Navbar() {
 
                     <Link
                       href="/supermarket"
-                      className="transition-colors hover:text-red-500"
+                      className={`transition-colors hover:text-red-500 ${
+                        pathname === "/supermarket"
+                          ? "font-medium text-red-500"
+                          : ""
+                      }`}
                     >
                       سوپرمارکت
                     </Link>
@@ -313,14 +357,13 @@ export default function Navbar() {
             تخفیف‌ها و پیشنهادها
           </Link>
 
-          {/* لینک اصلی طلا و نقره در نوار ناوبری */}
           <Link
             href="/gold"
             className={`flex items-center gap-2 transition-colors hover:text-red-500 ${
               pathname === "/gold" ? "font-medium text-red-500" : ""
             }`}
           >
-            <span className="h-2 w-2 animate-pulse rounded-full bg-yellow-400"></span>
+            <span className="h-2 w-2 animate-pulse rounded-full bg-yellow-400" />
             طلا و نقره دیجیتال
           </Link>
         </div>

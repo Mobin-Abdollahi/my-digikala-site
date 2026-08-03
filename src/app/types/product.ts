@@ -1,18 +1,17 @@
 export interface Product {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oldPrice?: number;
-  id: string | number;
+  id: string;
   title: string;
   price: number;
+  oldPrice?: number;
+  discount?: number;
   image: string;
   category: string;
+  subcategory?: string;
   rating: number;
-  discount?: number;
-
   description?: string;
-  specs?: { label: string; value: string }[];
-
-  // ✅ برای سوپرمارکت و بخش‌ها
-  tags?: ("new" | "bestSeller")[];
-  subcategory?: string; // مثل: نوشیدنی، لبنیات، تنقلات...
+  specs?: {
+    label: string;
+    value: string;
+  }[];
+  tags?: string[];
 }

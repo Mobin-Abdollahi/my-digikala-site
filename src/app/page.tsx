@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useEffect, useMemo, useState, Suspense } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -15,7 +15,8 @@ import {
   X,
 } from "lucide-react";
 
-import { products } from "./data/products";
+import type { Product } from "./types/product";
+import { getProducts } from "./utils/productManager";
 import ProductCard from "./product/productCard";
 import HorizontalProductSection from "./components/product/HorizontalProductSection";
 
@@ -31,48 +32,63 @@ function HomeContent() {
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState("default");
 
+  // در رندر اولیه آرایه خالی است؛ سپس در مرورگر از localStorage خوانده می‌شود.
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+
   useEffect(() => {
     setSearchTerm(urlSearch);
   }, [urlSearch]);
 
+  useEffect(() => {
+    setAllProducts(getProducts());
+  }, []);
+
   const categories = useMemo(() => {
     return [
       "all",
-      ...Array.from(new Set(products.map((product) => product.category))),
+      ...Array.from(
+        new Set(allProducts.map((product) => product.category))
+      ),
     ];
-  }, []);
+  }, [allProducts]);
 
   const mobileProducts = useMemo(
-    () => products.filter((product) => product.category === "موبایل").slice(0, 10),
-    []
+    () =>
+      allProducts
+        .filter((product) => product.category === "موبایل")
+        .slice(0, 10),
+    [allProducts]
   );
 
   const laptopProducts = useMemo(
-    () => products.filter((product) => product.category === "لپ تاپ").slice(0, 10),
-    []
+    () =>
+      allProducts
+        .filter((product) => product.category === "لپ تاپ")
+        .slice(0, 10),
+    [allProducts]
   );
 
   const accessoryProducts = useMemo(
     () =>
-      products
+      allProducts
         .filter((product) => product.category === "لوازم جانبی")
         .slice(0, 10),
-    []
+    [allProducts]
   );
 
   const smartwatchProducts = useMemo(
     () =>
-      products
+      allProducts
         .filter((product) => product.category === "ساعت هوشمند")
         .slice(0, 10),
-    []
+    [allProducts]
   );
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
     const parsedMaxPrice = Number(maxPrice.replaceAll(",", ""));
 
-    const result = products.filter((product) => {
+    const result = allProducts.filter((product) => {
       const productTitle = product.title?.toLowerCase() || "";
       const productDescription = product.description?.toLowerCase() || "";
 
@@ -123,7 +139,14 @@ function HomeContent() {
     }
 
     return result;
-  }, [searchTerm, category, minRating, maxPrice, sortBy]);
+  }, [
+    allProducts,
+    searchTerm,
+    category,
+    minRating,
+    maxPrice,
+    sortBy,
+  ]);
 
   const isFiltering =
     searchTerm.trim() !== "" ||
@@ -216,7 +239,10 @@ function HomeContent() {
               </div>
 
               <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
-                <Star className="mb-4 fill-amber-400 text-amber-400" size={30} />
+                <Star
+                  className="mb-4 fill-amber-400 text-amber-400"
+                  size={30}
+                />
                 <h2 className="font-bold text-white">انتخاب بهتر</h2>
                 <p className="mt-2 text-sm leading-6 text-zinc-400">
                   مقایسه براساس قیمت، امتیاز و دسته‌بندی
@@ -257,6 +283,7 @@ function HomeContent() {
               <span className="mb-2 block text-sm font-bold text-zinc-700">
                 دسته‌بندی
               </span>
+
               <select
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
@@ -278,6 +305,7 @@ function HomeContent() {
               <span className="mb-2 block text-sm font-bold text-zinc-700">
                 حداقل امتیاز
               </span>
+
               <select
                 value={minRating}
                 onChange={(event) => setMinRating(event.target.value)}
@@ -294,6 +322,7 @@ function HomeContent() {
               <span className="mb-2 block text-sm font-bold text-zinc-700">
                 حداکثر قیمت
               </span>
+
               <input
                 type="number"
                 min="0"
@@ -308,6 +337,7 @@ function HomeContent() {
               <span className="mb-2 block text-sm font-bold text-zinc-700">
                 مرتب‌سازی
               </span>
+
               <select
                 value={sortBy}
                 onChange={(event) => setSortBy(event.target.value)}
@@ -372,9 +402,11 @@ function HomeContent() {
           ) : (
             <div className="rounded-3xl border border-dashed border-zinc-300 bg-white px-4 py-16 text-center">
               <PackageSearch className="mx-auto mb-4 text-zinc-400" size={44} />
+
               <h3 className="text-lg font-black text-zinc-800">
                 محصولی پیدا نشد
               </h3>
+
               <p className="mt-2 text-sm text-zinc-500">
                 فیلترها یا عبارت جستجوی خود را تغییر دهید.
               </p>
@@ -426,11 +458,13 @@ function HomeContent() {
 
 export default function HomePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-50/50 flex items-center justify-center">
-        <p className="text-zinc-500">در حال بارگذاری صفحه اصلی...</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-50/50">
+          <p className="text-zinc-500">در حال بارگذاری صفحه اصلی...</p>
+        </div>
+      }
+    >
       <HomeContent />
     </Suspense>
   );
