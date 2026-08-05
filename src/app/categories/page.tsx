@@ -28,7 +28,7 @@ function CategoriesContent() {
 
   return (
     <main className="min-h-screen bg-[#0f0f0f] text-white">
-      <section className="relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#111111] via-[#171717] to-[#0d0d0d]">
+      <section className="relative overflow-hidden border-b border-white/10 bg-linear-to-br from-[#111111] via-[#171717] to-[#0d0d0d]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(244,63,94,0.18),transparent_28%),radial-gradient(circle_at_top_right,rgba(249,115,22,0.14),transparent_25%)]" />
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="max-w-3xl">

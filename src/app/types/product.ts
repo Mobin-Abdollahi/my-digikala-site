@@ -1,17 +1,14 @@
 export interface Product {
-  id: string;
+  oldPrice?: number;
+  id: string | number;
   title: string;
   price: number;
-  oldPrice?: number;
-  discount?: number;
   image: string;
   category: string;
-  subcategory?: string;
   rating: number;
+  discount?: number;
   description?: string;
-  specs?: {
-    label: string;
-    value: string;
-  }[];
-  tags?: string[];
+  specs?: { label: string; value: string }[];
+  tags?: ("new" | "bestSeller")[];
+  subcategory?: string;
 }

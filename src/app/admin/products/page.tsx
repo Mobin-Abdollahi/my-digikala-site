@@ -474,15 +474,17 @@ export default function AdminProductsPage() {
                 className="overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm"
               >
                 <div className="mb-4 h-44 overflow-hidden rounded-xl bg-neutral-50">
-                  <img
-                    src={product.image}
-                    alt={product.title}
-                    className="h-full w-full object-contain p-3"
-                    onError={(event) => {
-                      event.currentTarget.src =
-                        "/images/product-placeholder.png";
-                    }}
-                  />
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.title}
+                      className="h-full w-full object-contain p-3"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm text-neutral-400">
+                      تصویر محصول ثبت نشده است
+                    </div>
+                  )}
                 </div>
 
                 <h3 className="line-clamp-2 min-h-12 font-bold text-neutral-800">

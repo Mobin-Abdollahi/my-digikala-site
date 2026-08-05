@@ -1,13 +1,12 @@
-import { Product } from "../types/product";
+import type { Product } from "../types/product";
 
-const baseProducts: Product[] = [
+export const baseProducts: Product[] = [
   {
     id: 1,
     title:
       "گوشی موبایل اپل مدل iPhone 13 CH دو سیم‌ کارت ظرفیت 128 گیگابایت و رم 4 گیگابایت",
     price: 42500000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/1cf6949666014382582772596956799059e0a0d9_1714400547.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90",
+    image: "/images/products/iphone-13.jpg",
     rating: 4.8,
     discount: 5,
     category: "موبایل",
@@ -26,8 +25,7 @@ const baseProducts: Product[] = [
     title:
       "گوشی موبایل سامسونگ مدل Galaxy S24 Ultra دو سیم کارت ظرفیت 256 گیگابایت و رم 12 گیگابایت",
     price: 71000000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/665f97984f18b31a5e128186f91f2495913e0078_1705650117.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90",
+    image: "/images/products/galaxy-s24-ultra.jpg",
     rating: 4.9,
     discount: 2,
     category: "موبایل",
@@ -45,8 +43,7 @@ const baseProducts: Product[] = [
     id: 9,
     title: "لپ تاپ 14 اینچی اپل مدل MacBook Pro M3 2023",
     price: 89000000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/397b203c621815b3a4a34b2f29397682333534f3_1699351025.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90",
+    image: "/images/products/macbook-pro-m3.jpg",
     rating: 4.8,
     discount: 0,
     category: "لپ‌تاپ",
@@ -63,8 +60,7 @@ const baseProducts: Product[] = [
     id: 10,
     title: "لپ تاپ 15.6 اینچی ایسوس مدل TUF Gaming F15",
     price: 63500000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/397b203c621815b3a4a34b2f29397682333534f3_1699351025.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90",
+    image: "/images/products/asus-tuf-f15.jpg",
     rating: 4.6,
     discount: 9,
     category: "لپ‌تاپ",
@@ -82,8 +78,7 @@ const baseProducts: Product[] = [
     id: 17,
     title: "هدفون بی سیم سونی مدل WH-1000XM5",
     price: 18900000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/237b0292b34208e7583764ba896f6002d95e0c50_1653818815.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90",
+    image: "/images/products/sony-wh1000xm5.jpg",
     rating: 4.9,
     discount: 10,
     category: "لوازم جانبی",
@@ -100,8 +95,7 @@ const baseProducts: Product[] = [
     id: 18,
     title: "ایرپاد اپل مدل AirPods Pro نسل 2",
     price: 16400000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/237b0292b34208e7583764ba896f6002d95e0c50_1653818815.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90",
+    image: "/images/products/airpods-pro-2.jpg",
     rating: 4.8,
     discount: 6,
     category: "لوازم جانبی",
@@ -119,8 +113,7 @@ const baseProducts: Product[] = [
     id: 25,
     title: "ساعت هوشمند اپل مدل Apple Watch Series 9 45mm",
     price: 29800000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/665f97984f18b31a5e128186f91f2495913e0078_1705650117.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90",
+    image: "/images/products/apple-watch-series-9.jpg",
     rating: 4.8,
     discount: 4,
     category: "ساعت هوشمند",
@@ -137,8 +130,7 @@ const baseProducts: Product[] = [
     id: 26,
     title: "ساعت هوشمند سامسونگ مدل Galaxy Watch 6 Classic",
     price: 15400000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/665f97984f18b31a5e128186f91f2495913e0078_1705650117.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/quality,q_90",
+    image: "/images/products/galaxy-watch-6-classic.jpg",
     rating: 4.6,
     discount: 6,
     category: "ساعت هوشمند",
@@ -152,14 +144,11 @@ const baseProducts: Product[] = [
       { label: "سازگاری", value: "Android" },
     ],
   },
-
-  // ✅ محصولات سوپرمارکتی (تعداد کمِ پایه؛ بعداً expand می‌شوند)
   {
     id: 1001,
     title: "نوشابه کولا 1.5 لیتری",
     price: 65000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/2d3db0b4ef8f3b7f2b4f2a0b7a0f0c9f.jpg",
+    image: "/images/products/cola.jpg",
     rating: 4.4,
     discount: 10,
     category: "سوپرمارکت",
@@ -171,8 +160,7 @@ const baseProducts: Product[] = [
     id: 1002,
     title: "آب معدنی 1.5 لیتری",
     price: 18000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/6d6b7d2a3c5f1a2c9e8d123456789abc.jpg",
+    image: "/images/products/water.jpg",
     rating: 4.6,
     discount: 0,
     category: "سوپرمارکت",
@@ -184,8 +172,7 @@ const baseProducts: Product[] = [
     id: 1003,
     title: "شیر کم چرب 1 لیتری",
     price: 52000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/1f2e3d4c5b6a79808f9e0d1c2b3a4f5e.jpg",
+    image: "/images/products/milk.jpg",
     rating: 4.7,
     discount: 5,
     category: "سوپرمارکت",
@@ -197,8 +184,7 @@ const baseProducts: Product[] = [
     id: 1004,
     title: "ماست پرچرب 900 گرمی",
     price: 98000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/abc123abc123abc123abc123abc123ab.jpg",
+    image: "/images/products/yogurt.jpg",
     rating: 4.5,
     discount: 0,
     category: "سوپرمارکت",
@@ -210,8 +196,7 @@ const baseProducts: Product[] = [
     id: 1005,
     title: "چیپس سیب زمینی خانواده",
     price: 74000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/0aa1bb2cc3dd4ee5ff66778899aabbcc.jpg",
+    image: "/images/products/chips.jpg",
     rating: 4.3,
     discount: 12,
     category: "سوپرمارکت",
@@ -223,8 +208,7 @@ const baseProducts: Product[] = [
     id: 1006,
     title: "شکلات تخته‌ای 100 گرمی",
     price: 89000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/ffeeddccbbaa99887766554433221100.jpg",
+    image: "/images/products/chocolate.jpg",
     rating: 4.8,
     discount: 8,
     category: "سوپرمارکت",
@@ -236,8 +220,7 @@ const baseProducts: Product[] = [
     id: 1007,
     title: "روغن مایع سرخ کردنی 1.8 لیتری",
     price: 245000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/11223344556677889900aabbccddeeff.jpg",
+    image: "/images/products/oil.jpg",
     rating: 4.4,
     discount: 0,
     category: "سوپرمارکت",
@@ -249,8 +232,7 @@ const baseProducts: Product[] = [
     id: 1008,
     title: "برنج ایرانی 5 کیلوگرمی",
     price: 890000,
-    image:
-      "https://dkstatics-public.digikala.com/digikala-products/99887766554433221100ffeeddccbbaa.jpg",
+    image: "/images/products/rice.jpg",
     rating: 4.7,
     discount: 3,
     category: "سوپرمارکت",
@@ -259,51 +241,61 @@ const baseProducts: Product[] = [
     description: "برنج ایرانی خوش‌عطر مناسب مهمانی و مصرف روزانه.",
   },
 ];
+function duplicateProducts(
+  items: Product[],
+  copiesPerProduct: number
+): Product[] {
+  const maxId = Math.max(
+    ...items.map((item) => {
+      const numericId = Number(item.id);
+      return Number.isFinite(numericId) ? numericId : 0;
+    })
+  );
 
-function expandCategoryProducts(items: Product[], targetCount: number): Product[] {
-  const grouped = items.reduce<Record<string, Product[]>>((acc, product) => {
-    if (!acc[product.category]) acc[product.category] = [];
-    acc[product.category].push(product);
-    return acc;
-  }, {});
+  let nextId = maxId + 1;
 
-  let newId = Math.max(...items.map((item) => Number(item.id))) + 1;
-  const finalProducts: Product[] = [];
+  return items.flatMap((product) => {
+    return Array.from({ length: copiesPerProduct }, (_, copyIndex) => {
+      // نسخه اول همان محصول اصلی است
+      if (copyIndex === 0) {
+        return product;
+      }
 
-  Object.values(grouped).forEach((categoryItems) => {
-    const expanded: Product[] = [...categoryItems];
+      const copyNumber = copyIndex + 1;
 
-    let copyIndex = 1;
-    while (expanded.length < targetCount) {
-      const source =
-        categoryItems[(expanded.length - categoryItems.length) % categoryItems.length];
-
-      const cloned: Product = {
-        ...source,
-        id: newId++,
-        title: `${source.title} - نسخه تست ${copyIndex}`,
-        price: source.price + copyIndex * 1000,
+      const duplicate: Product = {
+        ...product,
+        id: nextId++,
+        title: `${product.title} - نسخه ${copyNumber}`,
+        price: product.price + copyIndex * 1000,
         rating: Math.max(
-          4,
-          Number((source.rating - (copyIndex % 3) * 0.1).toFixed(1))
+          1,
+          Number(
+            Math.min(
+              5,
+              product.rating - (copyIndex % 3) * 0.1
+            ).toFixed(1)
+          )
         ),
       };
 
-      // ✅ تنوع در tagها (برای سوپرمارکت قشنگ‌تر می‌شود)
-      if (source.category === "سوپرمارکت") {
-        if (copyIndex % 4 === 0) cloned.tags = ["new"];
-        if (copyIndex % 5 === 0) cloned.tags = ["bestSeller"];
-        if (copyIndex % 7 === 0) cloned.tags = ["new", "bestSeller"];
+      // تغییر جزئی تگ محصولات سوپرمارکت
+      if (product.category === "سوپرمارکت") {
+        if (copyIndex % 7 === 0) {
+          duplicate.tags = ["new", "bestSeller"];
+        } else if (copyIndex % 5 === 0) {
+          duplicate.tags = ["bestSeller"];
+        } else if (copyIndex % 3 === 0) {
+          duplicate.tags = ["new"];
+        }
       }
 
-      expanded.push(cloned);
-      copyIndex++;
-    }
-
-    finalProducts.push(...expanded);
+      return duplicate;
+    });
   });
-
-  return finalProducts;
 }
 
-export const products: Product[] = expandCategoryProducts(baseProducts, 20);
+export const products: Product[] = duplicateProducts(baseProducts, 10);
+
+
+
