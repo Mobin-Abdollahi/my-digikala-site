@@ -8,7 +8,6 @@ import { useAuth } from "../../store/auth-context";
 import { useCart } from "../../store/cart-context";
 import { isAdminPhone } from "../../utils/auth";
 
-// آیتم «طلا و نقره دیجیتال» Category محصول نیست و مسیر مستقل دارد.
 const categoryItems = [
   { label: "موبایل", category: "موبایل" },
   { label: "لپ‌تاپ", category: "لپ‌تاپ" },
@@ -28,8 +27,6 @@ export default function Navbar() {
   const currentCategory = searchParams.get("category") || "";
 
   const [searchValue, setSearchValue] = useState(currentSearch);
-
-  // جلوگیری از Hydration Mismatch بین SSR و Client
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -44,14 +41,11 @@ export default function Navbar() {
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const trimmedValue = searchValue.trim();
-
     if (trimmedValue) {
       router.push(`/?search=${encodeURIComponent(trimmedValue)}`);
       return;
     }
-
     router.push("/");
   };
 
@@ -75,17 +69,15 @@ export default function Navbar() {
               DIGIKALA
             </Link>
 
-            <form
-              onSubmit={handleSearchSubmit}
-              className="hidden max-w-md flex-1 md:block"
-            >
+            {/* نوار جستجو - در موبایل کوچک‌تر و بهینه‌تر نمایش داده می‌شود */}
+            <form onSubmit={handleSearchSubmit} className="flex-1 max-w-md">
               <div className="relative">
                 <input
                   type="text"
                   value={searchValue}
                   onChange={(event) => setSearchValue(event.target.value)}
                   placeholder="جستجو در دیجی‌کالا..."
-                  className="w-full rounded-lg bg-gray-100 px-4 py-2 pl-10 text-sm outline-none focus:ring-1 focus:ring-red-400"
+                  className="w-full rounded-lg bg-gray-100 px-4 py-2 pl-10 text-xs md:text-sm outline-none focus:ring-1 focus:ring-red-400"
                 />
 
                 {searchValue ? (
@@ -102,8 +94,8 @@ export default function Navbar() {
             </form>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Hydration Gate برای بخش ورود و پروفایل */}
+          {/* در دسکتاپ دکمه‌های حساب کاربری و سبد خرید نمایش داده می‌شود */}
+          <div className="hidden md:flex items-center gap-4">
             {!mounted ? (
               <div
                 className="h-6 w-28 animate-pulse rounded-md bg-gray-200"
@@ -118,7 +110,6 @@ export default function Navbar() {
                   پروفایل
                 </Link>
 
-                {/* لینک‌های مخصوص مدیریت (فقط برای ادمین) */}
                 {isAdmin ? (
                   <div className="flex items-center gap-2 border-r border-gray-200 pr-3 mr-1">
                     <Link
@@ -161,8 +152,6 @@ export default function Navbar() {
               className="relative p-2"
             >
               <span className="text-2xl">🛒</span>
-
-              {/* Hydration Gate برای badge سبد خرید */}
               {mounted && totalItems > 0 ? (
                 <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                   {totalItems}
@@ -170,9 +159,21 @@ export default function Navbar() {
               ) : null}
             </Link>
           </div>
+
+          {/* در موبایل فقط نشانگر ساده‌ی ورود/پروفایل ادمین در هدر بالا باقی می‌ماند */}
+          {mounted && isLoggedIn && isAdmin && (
+            <div className="md:hidden flex items-center gap-2">
+              <Link
+                href="/admin/orders"
+                className="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-600"
+              >
+                پنل ادمین
+              </Link>
+            </div>
+          )}
         </div>
 
-        {/* نوار دسته‌بندی‌ها */}
+        {/* نوار دسته‌بندی‌ها (مخصوص دسکتاپ) */}
         <div className="hidden h-10 items-center gap-6 text-sm text-gray-600 md:flex">
           <div className="group relative">
             <Link
@@ -189,37 +190,31 @@ export default function Navbar() {
               <div className="grid grid-cols-4 gap-4 text-sm">
                 <div className="space-y-3">
                   <h4 className="font-bold text-gray-800">کالای دیجیتال</h4>
-
                   <div className="flex flex-col gap-2">
                     <Link
                       href="/categories?category=موبایل"
                       className={`transition-colors hover:text-red-500 ${
-                        pathname === "/categories" &&
-                        currentCategory === "موبایل"
+                        pathname === "/categories" && currentCategory === "موبایل"
                           ? "font-medium text-red-500"
                           : ""
                       }`}
                     >
                       موبایل
                     </Link>
-
                     <Link
                       href="/categories?category=لپ‌تاپ"
                       className={`transition-colors hover:text-red-500 ${
-                        pathname === "/categories" &&
-                        currentCategory === "لپ‌تاپ"
+                        pathname === "/categories" && currentCategory === "لپ‌تاپ"
                           ? "font-medium text-red-500"
                           : ""
                       }`}
                     >
                       لپ‌تاپ
                     </Link>
-
                     <Link
                       href="/categories?category=ساعت هوشمند"
                       className={`transition-colors hover:text-red-500 ${
-                        pathname === "/categories" &&
-                        currentCategory === "ساعت هوشمند"
+                        pathname === "/categories" && currentCategory === "ساعت هوشمند"
                           ? "font-medium text-red-500"
                           : ""
                       }`}
@@ -231,13 +226,11 @@ export default function Navbar() {
 
                 <div className="space-y-3">
                   <h4 className="font-bold text-gray-800">لوازم جانبی</h4>
-
                   <div className="flex flex-col gap-2">
                     <Link
                       href="/categories?category=لوازم جانبی"
                       className={`transition-colors hover:text-red-500 ${
-                        pathname === "/categories" &&
-                        currentCategory === "لوازم جانبی"
+                        pathname === "/categories" && currentCategory === "لوازم جانبی"
                           ? "font-medium text-red-500"
                           : ""
                       }`}
@@ -249,7 +242,6 @@ export default function Navbar() {
 
                 <div className="space-y-3">
                   <h4 className="font-bold text-gray-800">دسترسی سریع</h4>
-
                   <div className="flex flex-col gap-2">
                     <Link
                       href="/categories"
@@ -261,18 +253,10 @@ export default function Navbar() {
                     >
                       همه محصولات
                     </Link>
-
-                    <Link
-                      href="/amazing-offers"
-                      className="transition-colors hover:text-red-500"
-                    >
+                    <Link href="/amazing-offers" className="transition-colors hover:text-red-500">
                       شگفت‌انگیزها
                     </Link>
-
-                    <Link
-                      href="/offers"
-                      className="transition-colors hover:text-red-500"
-                    >
+                    <Link href="/offers" className="transition-colors hover:text-red-500">
                       تخفیف‌ها و پیشنهادها
                     </Link>
                   </div>
@@ -280,17 +264,13 @@ export default function Navbar() {
 
                 <div className="space-y-3">
                   <h4 className="font-bold text-gray-800">محبوب</h4>
-
                   <div className="flex flex-col gap-2">
                     {categoryItems.map((item) => (
                       <Link
                         key={item.category}
-                        href={`/categories?category=${encodeURIComponent(
-                          item.category
-                        )}`}
+                        href={`/categories?category=${encodeURIComponent(item.category)}`}
                         className={`transition-colors hover:text-red-500 ${
-                          pathname === "/categories" &&
-                          currentCategory === item.category
+                          pathname === "/categories" && currentCategory === item.category
                             ? "font-medium text-red-500"
                             : ""
                         }`}
@@ -298,7 +278,6 @@ export default function Navbar() {
                         {item.label}
                       </Link>
                     ))}
-
                     <Link
                       href="/gold"
                       className={`transition-colors hover:text-red-500 ${
@@ -307,13 +286,10 @@ export default function Navbar() {
                     >
                       طلا و نقره دیجیتال
                     </Link>
-
                     <Link
                       href="/supermarket"
                       className={`transition-colors hover:text-red-500 ${
-                        pathname === "/supermarket"
-                          ? "font-medium text-red-500"
-                          : ""
+                        pathname === "/supermarket" ? "font-medium text-red-500" : ""
                       }`}
                     >
                       سوپرمارکت

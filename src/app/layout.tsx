@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import BottomNavigation from "./components/layout/BottomNavigation";
 import { CartProvider } from "./store/cart-context";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./store/auth-context";
@@ -28,8 +29,9 @@ export default function RootLayout({
 
             <Toaster position="bottom-left" reverseOrder={false} />
 
-            {children}
+            <main className="pb-16 md:pb-0">{children}</main>
 
+            <BottomNavigation />
             <Footer />
           </CartProvider>
         </AuthProvider>
