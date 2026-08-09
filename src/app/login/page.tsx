@@ -1,120 +1,106 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import React, { useMemo, useState } from "react";
+import { toast } from "react-hot-toast";
 import { useAuth } from "../store/auth-context";
-import toast from "react-hot-toast";
+
+export default function LoginPage() {
+  return (
+    <React.Suspense fallback={<div>در حال بارگذاری...</div>}>
+      <LoginContent />
+    </React.Suspense>
+  );
+}
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
 
-  const rawRedirectTo = searchParams.get("redirect");
-
-  const redirectTo =
-    rawRedirectTo &&
-    rawRedirectTo.startsWith("/") &&
-    !rawRedirectTo.startsWith("//")
-      ? rawRedirectTo
-      : "/";
+  const redirectTo = useMemo(
+    () => searchParams.get("redirect") || "/profile",
+    [searchParams]
+  );
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!phone.trim()) {
-      toast.error("شماره موبایل را وارد کنید");
+    if (!phone || !name) {
+      toast.error("لطفاً تمامی فیلدها را پر کنید.");
       return;
     }
 
-    login({
-      name: name.trim() || "کاربر دیجی‌کالا",
-      phone: phone.trim(),
-    });
+    if (!/^09\d{9}$/.test(phone)) {
+      toast.error("شماره موبایل نامعتبر است (مثال: 09123456789).");
+      return;
+    }
 
-    toast.success("ورود با موفقیت انجام شد");
-    router.replace(redirectTo);
+    setSubmitting(true);
+
+    try {
+      await login(name, phone);
+      toast.success("خوش آمدید!");
+      router.replace(redirectTo);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "ورود ناموفق بود. لطفاً دوباره تلاش کنید."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10" dir="rtl">
-      <div className="mx-auto max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-zinc-800">ورود / ثبت‌نام</h1>
+    <main className="mx-auto flex min-h-[70vh] max-w-md items-center px-4 py-10">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+      >
+        <h1 className="mb-6 text-center text-2xl font-bold text-neutral-900">
+          ورود / ثبت‌نام
+        </h1>
 
-        <p className="mt-2 text-sm text-zinc-500">
-          برای ادامه خرید، لطفا اطلاعات خود را وارد کنید.
-        </p>
+        <div className="mb-4">
+          <label className="mb-2 block text-sm font-medium text-neutral-700">
+            نام
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded-xl border border-neutral-300 px-4 py-3 outline-none transition focus:border-red-500"
+            placeholder="نام خود را وارد کنید"
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <div>
-            <label
-              htmlFor="name"
-              className="mb-2 block text-sm text-zinc-600"
-            >
-              نام
-            </label>
+        <div className="mb-6">
+          <label className="mb-2 block text-sm font-medium text-neutral-700">
+            شماره موبایل
+          </label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full rounded-xl border border-neutral-300 px-4 py-3 outline-none transition focus:border-red-500"
+            placeholder="09123456789"
+          />
+        </div>
 
-            <input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              type="text"
-              placeholder="اختیاری"
-              autoComplete="name"
-              className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-red-500"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="phone"
-              className="mb-2 block text-sm text-zinc-600"
-            >
-              شماره موبایل
-            </label>
-
-            <input
-              id="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              type="tel"
-              inputMode="tel"
-              placeholder="09xxxxxxxxx"
-              autoComplete="tel"
-              className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-red-500"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full rounded-xl bg-red-500 px-4 py-3 font-medium text-white transition hover:bg-red-600"
-          >
-            ورود
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function LoginFallback() {
-  return (
-    <div
-      className="mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-10"
-      dir="rtl"
-    >
-      <p className="text-sm text-zinc-500">در حال بارگذاری...</p>
-    </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<LoginFallback />}>
-      <LoginContent />
-    </Suspense>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full rounded-xl bg-red-600 px-4 py-3 font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {submitting ? "در حال ورود..." : "ورود"}
+        </button>
+      </form>
+    </main>
   );
 }

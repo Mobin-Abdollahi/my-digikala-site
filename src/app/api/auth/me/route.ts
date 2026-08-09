@@ -1,19 +1,40 @@
-// src/app/api/auth/me/route.ts
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { jwtVerify } from "jose";
+
+const COOKIE_NAME = "auth_token";
+
+const secret = new TextEncoder().encode(
+  process.env.JWT_SECRET || "default_super_secret_jwt_key_123456"
+);
 
 export async function GET() {
   const cookieStore = await cookies();
-  const session = cookieStore.get("digikala_session");
+  const token = cookieStore.get(COOKIE_NAME)?.value;
 
-  if (!session || !session.value) {
-    return NextResponse.json({ isLoggedIn: false, user: null });
+  if (!token) {
+    return NextResponse.json({
+      isLoggedIn: false,
+      user: null,
+    });
   }
 
   try {
-    const user = JSON.parse(session.value);
-    return NextResponse.json({ isLoggedIn: true, user });
+    const { payload } = await jwtVerify(token, secret);
+
+    return NextResponse.json({
+      isLoggedIn: true,
+      user: {
+        id: String(payload.id),
+        name: String(payload.name),
+        phone: String(payload.phone),
+        role: payload.role ? String(payload.role) : "user",
+      },
+    });
   } catch {
-    return NextResponse.json({ isLoggedIn: false, user: null });
+    return NextResponse.json({
+      isLoggedIn: false,
+      user: null,
+    });
   }
 }

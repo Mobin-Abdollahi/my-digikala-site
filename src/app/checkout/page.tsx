@@ -13,19 +13,15 @@ import type { Order } from "../types/order";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, loading } = useAuth();
   const { items, clearCart } = useCart();
 
   const [receiverName, setReceiverName] = useState(user?.name || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [address, setAddress] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!isLoggedIn) {
-      router.replace("/login?redirect=/checkout");
-    }
-  }, [isLoggedIn, router]);
-
+  // به‌روزرسانی فیلدهای پیش‌فرض فرم پس از دریافت اطلاعات کاربر
   useEffect(() => {
     if (user) {
       setReceiverName(user.name);
@@ -33,11 +29,19 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
+  // انتقال به صفحه لاگین در صورت عدم احراز هویت پس از لود شدن وضعیت
   useEffect(() => {
-    if (items.length === 0) {
+    if (!loading && !isLoggedIn) {
+      router.replace("/login?redirect=/checkout");
+    }
+  }, [loading, isLoggedIn, router]);
+
+  // انتقال به سبد خرید در صورت خالی بودن آن
+  useEffect(() => {
+    if (!loading && items.length === 0) {
       router.replace("/cart");
     }
-  }, [items.length, router]);
+  }, [loading, items.length, router]);
 
   const totalPrice = useMemo(() => {
     return items.reduce(
@@ -46,7 +50,7 @@ export default function CheckoutPage() {
     );
   }, [items]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!user) return;
@@ -56,25 +60,42 @@ export default function CheckoutPage() {
       return;
     }
 
-    const order: Order = {
-      id: crypto.randomUUID(),
-      userId: user.id,
-      userPhone: user.phone,
-      receiverName: receiverName.trim(),
-      phone: phone.trim(),
-      address: address.trim(),
-      items,
-      totalPrice,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      orderType: "product",
-    };
+    try {
+      setIsSubmitting(true);
 
-    saveOrder(order);
-    clearCart();
-    toast.success("سفارش شما با موفقیت ثبت شد");
-    router.push("/order-success");
+      const order: Order = {
+        id: crypto.randomUUID(),
+        userId: user.id,
+        userPhone: user.phone,
+        receiverName: receiverName.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+        items,
+        totalPrice,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        orderType: "product",
+      };
+
+      saveOrder(order);
+      clearCart();
+      toast.success("سفارش شما با موفقیت ثبت شد");
+      router.push("/order-success");
+    } catch {
+      toast.error("ثبت سفارش با خطا مواجه شد");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // ممانعت از پرش صفحه تا بارگذاری وضعیت احراز هویت
+  if (loading) {
+    return (
+      <div className="flex min-h-100 items-center justify-center text-neutral-600" dir="rtl">
+        در حال بررسی وضعیت ورود...
+      </div>
+    );
+  }
 
   if (!isLoggedIn || !user) {
     return null;
@@ -93,9 +114,11 @@ export default function CheckoutPage() {
             نام گیرنده
           </label>
           <input
+            type="text"
             value={receiverName}
             onChange={(e) => setReceiverName(e.target.value)}
-            className="w-full rounded-2xl border border-neutral-300 px-4 py-3 outline-none"
+            className="w-full rounded-2xl border border-neutral-300 px-4 py-3 outline-none focus:border-red-500"
+            placeholder="نام و نام خانوادگی گیرنده"
           />
         </div>
 
@@ -104,9 +127,11 @@ export default function CheckoutPage() {
             شماره تماس
           </label>
           <input
+            type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded-2xl border border-neutral-300 px-4 py-3 outline-none"
+            className="w-full rounded-2xl border border-neutral-300 px-4 py-3 outline-none focus:border-red-500"
+            placeholder="شماره موبایل گیرنده"
           />
         </div>
 
@@ -117,7 +142,8 @@ export default function CheckoutPage() {
           <textarea
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="min-h-28 w-full rounded-2xl border border-neutral-300 px-4 py-3 outline-none"
+            className="min-h-28 w-full rounded-2xl border border-neutral-300 px-4 py-3 outline-none focus:border-red-500"
+            placeholder="نشانی دقیق پستی برای تحویل سفارش"
           />
         </div>
 
@@ -127,9 +153,10 @@ export default function CheckoutPage() {
 
         <button
           type="submit"
-          className="w-full rounded-2xl bg-red-600 px-5 py-3.5 font-bold text-white transition hover:bg-red-700"
+          disabled={isSubmitting}
+          className="w-full rounded-2xl bg-red-600 px-5 py-3.5 font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          ثبت سفارش
+          {isSubmitting ? "در حال ثبت سفارش..." : "ثبت سفارش"}
         </button>
       </form>
     </main>

@@ -4,47 +4,56 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
+
 import { useAuth } from "../../../store/auth-context";
 import { useCart } from "../../../store/cart-context";
 import { formatPrice } from "../../../utils/formatPrice";
-import { getOrdersByUserPhone } from "../../../utils/orders";
+import { getOrdersByUser } from "../../../utils/orders";
 import { getStatusClass, getStatusLabel } from "../../../utils/orderStatus";
 
 export default function OrderDetailsPage() {
   const router = useRouter();
   const params = useParams<{ orderId: string }>();
+
   const { user, isLoggedIn } = useAuth();
   const { addToCart } = useCart();
 
+  const orderId = params.orderId;
+
   useEffect(() => {
     if (!isLoggedIn || !user) {
-      router.replace(`/login?redirect=/profile/orders/${params.orderId}`);
+      router.replace(`/login?redirect=/profile/orders/${orderId}`);
     }
-  }, [isLoggedIn, user, router, params.orderId]);
+  }, [isLoggedIn, user, router, orderId]);
 
   const order = useMemo(() => {
     if (!user) return null;
 
-    const orders = getOrdersByUserPhone(user.phone);
-    return orders.find((item) => item.id === params.orderId) ?? null;
-  }, [user, params.orderId]);
+    /*
+     * سفارش‌ها ابتدا بر اساس userId فیلتر می‌شوند.
+     * برای سفارش‌های قدیمی که userId ندارند، داخل تابع
+     * getOrdersByUser، شماره تلفن به‌عنوان fallback بررسی می‌شود.
+     */
+    const orders = getOrdersByUser(user);
+
+    return orders.find((item) => item.id === orderId) ?? null;
+  }, [user, orderId]);
 
   const handleReorder = () => {
     if (!order) return;
 
     order.items.forEach((item) => {
-      for (let i = 0; i < item.quantity; i += 1) {
-        addToCart({
-                    id: item.id,
-                    title: item.title,
-                    price: item.price,
-                    image: item.image || "/images/product-placeholder.png",
-                    category: "",
-                    rating: 0,
-                  },
-                  item.quantity
-                );
-      }
+      addToCart(
+        {
+          id: item.id,
+          title: item.title,
+          price: item.price,
+          image: item.image || "/images/product-placeholder.png",
+          category: "",
+          rating: 0,
+        },
+        item.quantity
+      );
     });
 
     toast.success("محصولات به سبد خرید اضافه شدند");
@@ -59,7 +68,10 @@ export default function OrderDetailsPage() {
     return (
       <main className="container mx-auto px-4 py-10">
         <div className="rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm">
-          <h1 className="mb-3 text-xl font-bold text-gray-800">سفارش پیدا نشد</h1>
+          <h1 className="mb-3 text-xl font-bold text-gray-800">
+            سفارش پیدا نشد
+          </h1>
+
           <Link
             href="/profile"
             className="inline-block rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
@@ -77,12 +89,19 @@ export default function OrderDetailsPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">جزئیات سفارش</h1>
-              <p className="mt-1 text-sm text-gray-500">کد سفارش: {order.id}</p>
+              <h1 className="text-2xl font-bold text-gray-800">
+                جزئیات سفارش
+              </h1>
+
+              <p className="mt-1 text-sm text-gray-500">
+                کد سفارش: {order.id}
+              </p>
             </div>
 
             <span
-              className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${getStatusClass(order.status)}`}
+              className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${getStatusClass(
+                order.status
+              )}`}
             >
               {getStatusLabel(order.status)}
             </span>
@@ -91,7 +110,9 @@ export default function OrderDetailsPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-lg bg-gray-50 p-4">
               <p className="text-sm text-gray-500">نام گیرنده</p>
-              <p className="mt-1 font-medium text-gray-800">{order.receiverName}</p>
+              <p className="mt-1 font-medium text-gray-800">
+                {order.receiverName}
+              </p>
             </div>
 
             <div className="rounded-lg bg-gray-50 p-4">
@@ -101,13 +122,17 @@ export default function OrderDetailsPage() {
 
             <div className="rounded-lg bg-gray-50 p-4 sm:col-span-2">
               <p className="text-sm text-gray-500">آدرس</p>
-              <p className="mt-1 font-medium text-gray-800">{order.address}</p>
+              <p className="mt-1 font-medium text-gray-800">
+                {order.address}
+              </p>
             </div>
           </div>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-xl font-bold text-gray-800">اقلام سفارش</h2>
+          <h2 className="mb-4 text-xl font-bold text-gray-800">
+            اقلام سفارش
+          </h2>
 
           <div className="space-y-4">
             {order.items.map((item) => (
@@ -116,8 +141,13 @@ export default function OrderDetailsPage() {
                 className="flex items-center justify-between rounded-lg border border-gray-100 p-4"
               >
                 <div>
-                  <h3 className="font-semibold text-gray-800">{item.title}</h3>
-                  <p className="mt-1 text-sm text-gray-500">تعداد: {item.quantity}</p>
+                  <h3 className="font-semibold text-gray-800">
+                    {item.title}
+                  </h3>
+
+                  <p className="mt-1 text-sm text-gray-500">
+                    تعداد: {item.quantity}
+                  </p>
                 </div>
 
                 <p className="font-bold text-red-500">
@@ -129,6 +159,7 @@ export default function OrderDetailsPage() {
 
           <div className="mt-6 flex items-center justify-between border-t pt-4">
             <span className="text-lg font-bold text-gray-800">مبلغ کل</span>
+
             <span className="text-xl font-extrabold text-red-500">
               {formatPrice(order.totalPrice)} تومان
             </span>
@@ -137,6 +168,7 @@ export default function OrderDetailsPage() {
 
         <div className="flex flex-wrap gap-3">
           <button
+            type="button"
             onClick={handleReorder}
             className="rounded-lg bg-red-500 px-5 py-2.5 text-white hover:bg-red-600"
           >

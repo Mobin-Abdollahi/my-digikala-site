@@ -8,10 +8,11 @@ import { useRouter } from "next/navigation";
 
 import { useAuth } from "../store/auth-context";
 import { useCart } from "../store/cart-context";
-import { getOrdersByUserPhone } from "../utils/orders";
+import { getOrdersByUser } from "../utils/orders";
 import { formatPrice } from "../utils/formatPrice";
 import { getStatusClass, getStatusLabel } from "../utils/orderStatus";
 import type { Order } from "../types/order";
+import { toast } from "react-hot-toast";
 
 type OrderFilter = "all" | "pending" | "processing" | "shipped" | "delivered";
 
@@ -26,20 +27,21 @@ function getOrderCountLabel(count: number) {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isLoggedIn, logout } = useAuth();
+  const { user, isLoggedIn, loading, logout } = useAuth();
   const { addToCart } = useCart();
 
   const [filter, setFilter] = useState<OrderFilter>("all");
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!loading && !isLoggedIn) {
       router.replace("/login?redirect=/profile");
     }
-  }, [isLoggedIn, router]);
+  }, [loading, isLoggedIn, router]);
 
   const orders = useMemo(() => {
     if (!user) return [];
-    return getOrdersByUserPhone(user.phone);
+    return getOrdersByUser(user);
   }, [user]);
 
   const filteredOrders = useMemo(() => {
@@ -56,25 +58,45 @@ export default function ProfilePage() {
   const processingOrders = orders.filter((order) => order.status === "processing").length;
   const shippedOrders = orders.filter((order) => order.status === "shipped").length;
   const deliveredOrders = orders.filter((order) => order.status === "delivered").length;
-  const totalSpent = orders.reduce((sum, order) => sum + Number(order.totalPrice || 0), 0);
+  const totalSpent = orders.reduce(
+    (sum, order) => sum + Number(order.totalPrice || 0),
+    0
+  );
 
   const handleReorder = (items: Order["items"]) => {
     items.forEach((item) => {
       addToCart(item, item.quantity);
     });
+    toast.success("محصولات به سبد خرید اضافه شدند.");
   };
 
-  if (!isLoggedIn || !user) {
+  const handleLogout = async () => {
+    if (loggingOut) return;
+
+    setLoggingOut(true);
+
+    try {
+      await logout();
+      toast.success("با موفقیت خارج شدید.");
+      router.replace("/");
+    } catch {
+      toast.error("خروج از حساب انجام نشد. لطفاً دوباره تلاش کنید.");
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
+  if (loading || !isLoggedIn || !user) {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4">
         <div className="rounded-2xl border border-neutral-200 bg-white px-6 py-8 text-center shadow-sm">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-2xl">
             👤
           </div>
-          <h1 className="text-xl font-bold text-neutral-900">در حال انتقال...</h1>
-          <p className="mt-2 text-sm text-neutral-500">
-            اگر به‌صورت خودکار منتقل نشدید، کمی صبر کنید.
-          </p>
+          <h1 className="text-xl font-bold text-neutral-900">
+            {loading ? "در حال بررسی حساب..." : "در حال انتقال..."}
+          </h1>
+          <p className="mt-2 text-sm text-neutral-500">لطفاً کمی صبر کنید.</p>
         </div>
       </main>
     );
@@ -82,7 +104,6 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-gray-50 pb-12" dir="rtl">
-      {/* هدر اصلاح شده - بدون اسکرول افقی */}
       <section className="relative w-full overflow-hidden bg-linear-to-r from-rose-600 via-red-600 to-orange-500 py-10 text-white shadow-lg sm:py-12 md:py-16">
         <div className="absolute inset-0">
           <div className="absolute -left-24 top-6 h-72 w-72 rounded-full bg-white/20 blur-3xl" />
@@ -101,7 +122,7 @@ export default function ProfilePage() {
                 <p className="mb-2 inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs backdrop-blur sm:mb-3 sm:px-4 sm:py-1.5 sm:text-sm">
                   پروفایل من
                 </p>
-                <h1 className="break-words text-2xl font-black sm:text-3xl md:text-4xl">
+                <h1 className="wrap-break-word text-2xl font-black sm:text-3xl md:text-4xl">
                   {user.name}
                 </h1>
                 <p className="mt-1 break-all text-sm text-white/80">{user.phone}</p>
@@ -118,19 +139,20 @@ export default function ProfilePage() {
               >
                 ادامه خرید
               </Link>
+
               <button
                 type="button"
-                onClick={logout}
-                className="rounded-xl border border-white/30 bg-white/10 px-3 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20 sm:px-5"
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="rounded-xl border border-white/30 bg-white/10 px-3 py-3 text-sm font-bold text-white backdrop-blur transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"
               >
-                خروج از حساب
+                {loggingOut ? "در حال خروج..." : "خروج از حساب"}
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* محتوای اصلی */}
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard title="کل سفارش‌ها" value={getOrderCountLabel(totalOrders)} icon="🧾" />
@@ -161,9 +183,13 @@ export default function ProfilePage() {
                 📦
               </div>
               <h3 className="text-lg font-bold text-neutral-900">
-                {orders.length === 0 ? "هنوز سفارشی ثبت نکرده‌اید" : "برای این فیلتر سفارشی پیدا نشد"}
+                {orders.length === 0
+                  ? "هنوز سفارشی ثبت نکرده‌اید"
+                  : "برای این فیلتر سفارشی پیدا نشد"}
               </h3>
-              <p className="mt-2 text-sm text-neutral-500">می‌توانید به فروشگاه بروید و خرید خود را شروع کنید.</p>
+              <p className="mt-2 text-sm text-neutral-500">
+                می‌توانید به فروشگاه بروید و خرید خود را شروع کنید.
+              </p>
               <Link
                 href="/"
                 className="mt-5 inline-flex rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-700"
@@ -231,6 +257,7 @@ export default function ProfilePage() {
                         >
                           مشاهده جزئیات
                         </Link>
+
                         {items.length > 0 && (
                           <button
                             type="button"
@@ -253,7 +280,15 @@ export default function ProfilePage() {
   );
 }
 
-function StatCard({ title, value, icon }: { title: string; value: string; icon: string }) {
+function StatCard({
+  title,
+  value,
+  icon,
+}: {
+  title: string;
+  value: string;
+  icon: string;
+}) {
   return (
     <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
@@ -269,7 +304,15 @@ function StatCard({ title, value, icon }: { title: string; value: string; icon: 
   );
 }
 
-function FilterButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+function FilterButton({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
   return (
     <button
       type="button"

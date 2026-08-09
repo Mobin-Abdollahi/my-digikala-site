@@ -1,77 +1,119 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 type User = {
   id: string;
   name: string;
   phone: string;
+  role?: string;
+};
+
+type LoginResult = {
+  success: boolean;
+  message?: string;
 };
 
 type AuthContextType = {
   user: User | null;
   isLoggedIn: boolean;
-  login: (nextUser: Omit<User, "id"> | User) => void;
-  logout: () => void;
+  loading: boolean;
+  login: (name: string, phone: string) => Promise<LoginResult>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 };
-
-const AUTH_KEY = "digikala-auth-user";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem(AUTH_KEY);
-
-    if (!savedUser) return;
-
+  const refreshUser = useCallback(async () => {
     try {
-      const parsedUser = JSON.parse(savedUser) as Partial<User>;
+      const response = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
 
-      if (!parsedUser.name || !parsedUser.phone) {
-        localStorage.removeItem(AUTH_KEY);
-        return;
-      }
+      const data = await response.json();
 
-      const normalizedUser: User = {
-        id: parsedUser.id ?? crypto.randomUUID(),
-        name: parsedUser.name,
-        phone: parsedUser.phone,
-      };
-
-      setUser(normalizedUser);
-      localStorage.setItem(AUTH_KEY, JSON.stringify(normalizedUser));
+      setUser(data.isLoggedIn ? data.user : null);
     } catch {
-      localStorage.removeItem(AUTH_KEY);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  const login = (nextUser: Omit<User, "id"> | User) => {
-    const normalizedUser: User = {
-      id: "id" in nextUser && nextUser.id ? nextUser.id : crypto.randomUUID(),
-      name: nextUser.name,
-      phone: nextUser.phone,
-    };
+  useEffect(() => {
+    void refreshUser();
+  }, [refreshUser]);
 
-    setUser(normalizedUser);
-    localStorage.setItem(AUTH_KEY, JSON.stringify(normalizedUser));
+  const login = async (
+    name: string,
+    phone: string
+  ): Promise<LoginResult> => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ name, phone }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        return {
+          success: false,
+          message: data.message || "ورود انجام نشد.",
+        };
+      }
+
+      setUser(data.user);
+
+      return {
+        success: true,
+      };
+    } catch {
+      return {
+        success: false,
+        message: "ارتباط با سرور برقرار نشد.",
+      };
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem(AUTH_KEY);
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } finally {
+      setUser(null);
+    }
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isLoggedIn: !!user,
+        isLoggedIn: Boolean(user),
+        loading,
         login,
         logout,
+        refreshUser,
       }}
     >
       {children}
