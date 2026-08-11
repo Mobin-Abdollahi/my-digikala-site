@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Link from "next/link";
 
 function SocialIcon({ type }: { type: "instagram" | "telegram" | "x" | "linkedin" }) {
@@ -58,7 +59,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <h3 className="text-base font-bold text-zinc-900">My DigiKala Clone</h3>
+            <h3 className="text-base font-bold text-zinc-900">My Mobinkala site</h3>
             <p className="mt-4 text-sm leading-8 text-zinc-600">
               یک پروژه آموزشی و رزومه‌ای فروشگاه اینترنتی با Next.js و Tailwind CSS که برای تمرین UI، مدیریت state و ساخت تجربه خرید آنلاین طراحی شده است.
             </p>
@@ -115,7 +116,7 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col gap-4 border-t border-zinc-100 pt-6 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-zinc-500">
-            © 2026 My DigiKala Clone — All rights reserved.
+            © 2026 My Mobinkala site — Welcome to my site.
           </p>
           <div className="flex gap-4 text-sm text-zinc-500">
             <Link href="/privacy" className="transition hover:text-red-600">

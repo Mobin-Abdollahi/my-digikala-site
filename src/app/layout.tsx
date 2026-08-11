@@ -9,8 +9,8 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./store/auth-context";
 
 export const metadata: Metadata = {
-  title: "My DigiKala Clone",
-  description: "Digikala clone project with Next.js",
+  title: "My Mobinkala site",
+  description: "Mobinkala site project with Next.js",
 };
 
 export default function RootLayout({

@@ -59,40 +59,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser]);
 
   const login = async (
-    name: string,
-    phone: string
+      name: string,
+      phone: string
   ): Promise<LoginResult> => {
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ name, phone }),
-      });
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ name, phone }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        return {
-          success: false,
-          message: data.message || "ورود انجام نشد.",
-        };
-      }
-
-      setUser(data.user);
-
-      return {
-        success: true,
-      };
-    } catch {
+    if (!response.ok || !data.success) {
       return {
         success: false,
-        message: "ارتباط با سرور برقرار نشد.",
+        message: data.message || "ورود انجام نشد.",
       };
     }
-  };
+
+    await refreshUser();
+
+    return {
+      success: true,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "ارتباط با سرور برقرار نشد.",
+    };
+  }
+};
+
 
   const logout = async () => {
     try {

@@ -66,7 +66,7 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="flex flex-1 items-center gap-4">
             <Link href="/" className="text-2xl font-black text-red-500">
-              DIGIKALA
+              MOBINKALA
             </Link>
 
             {/* نوار جستجو - در موبایل کوچک‌تر و بهینه‌تر نمایش داده می‌شود */}

@@ -7,9 +7,7 @@ import toast from "react-hot-toast";
 
 import { useAuth } from "../store/auth-context";
 import { useCart } from "../store/cart-context";
-import { saveOrder } from "../utils/orders";
 import { formatPrice } from "../utils/formatPrice";
-import type { Order } from "../types/order";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -50,43 +48,48 @@ export default function CheckoutPage() {
     );
   }, [items]);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
 
-    if (!user) return;
+  if (!user) return;
 
-    if (!receiverName.trim() || !phone.trim() || !address.trim()) {
-      toast.error("لطفاً همه فیلدها را کامل کنید");
-      return;
-    }
+  if (!receiverName.trim() || !phone.trim() || !address.trim()) {
+    toast.error("لطفاً همه فیلدها را پر کنید");
+    return;
+  }
 
-    try {
-      setIsSubmitting(true);
+  setIsSubmitting(true);
 
-      const order: Order = {
-        id: crypto.randomUUID(),
-        userId: user.id,
-        userPhone: user.phone,
+  try {
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         receiverName: receiverName.trim(),
         phone: phone.trim(),
         address: address.trim(),
         items,
-        totalPrice,
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        orderType: "product",
-      };
+      }),
+    });
 
-      saveOrder(order);
-      clearCart();
-      toast.success("سفارش شما با موفقیت ثبت شد");
-      router.push("/order-success");
-    } catch {
-      toast.error("ثبت سفارش با خطا مواجه شد");
-    } finally {
-      setIsSubmitting(false);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data?.error || "ثبت سفارش ناموفق بود");
     }
-  };
+
+    clearCart();
+    toast.success("سفارش شما با موفقیت ثبت شد");
+    router.push("/order-success");
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : "خطا در ثبت سفارش");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   // ممانعت از پرش صفحه تا بارگذاری وضعیت احراز هویت
   if (loading) {
