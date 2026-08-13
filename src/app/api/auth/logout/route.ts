@@ -5,6 +5,7 @@ const COOKIE_NAME = "auth_token";
 export async function POST() {
   const response = NextResponse.json({
     success: true,
+    message: "با موفقیت خارج شدید.",
   });
 
   response.cookies.set(COOKIE_NAME, "", {

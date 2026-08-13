@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../../store/auth-context";
-import { isAdminPhone } from "../../utils/auth";
 import type { Product } from "../../types/product";
 import {
   createProduct,
@@ -99,14 +98,14 @@ export default function AdminProductsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!isLoggedIn || !isAdminPhone(user?.phone)) {
+    if (!isLoggedIn || user?.role !== "admin") {
       router.replace("/login?redirect=/admin/products");
       return;
     }
 
     setProducts(getProducts());
     setIsLoading(false);
-  }, [isLoggedIn, user?.phone, router]);
+  }, [isLoggedIn, user?.role, router]);
 
   function refreshProducts() {
     setProducts(getProducts());

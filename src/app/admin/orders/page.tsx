@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 import { useAuth } from "../../store/auth-context";
-import { isAdminPhone } from "../../utils/auth";
-import { getOrders, updateOrderStatus } from "../../utils/orders";
+import { fetchAllOrders } from "../../utils/orders";
 import { formatPrice } from "../../utils/formatPrice";
 import { getStatusClass, getStatusLabel } from "../../utils/orderStatus";
 import type { Order, OrderStatus } from "../../types/order";
@@ -22,16 +21,19 @@ const statusOptions: Array<"all" | OrderStatus> = [
 
 export default function AdminOrdersPage() {
   const router = useRouter();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, loading: authLoading } = useAuth();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | OrderStatus>("all");
 
-  const isAdmin = Boolean(user?.phone && isAdminPhone(user.phone));
+  // بررسی نقش ادمین از JWT
+  const isAdmin = Boolean(user && user.role === "admin");
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (!isLoggedIn) {
       router.replace("/login?redirect=/admin/orders");
       return;
@@ -43,10 +45,20 @@ export default function AdminOrdersPage() {
     }
 
     if (user && isAdmin) {
-      setOrders(getOrders());
-      setLoading(false);
+      setLoading(true);
+      fetchAllOrders()
+        .then((fetchedOrders) => {
+          setOrders(fetchedOrders);
+        })
+        .catch(() => {
+          setOrders([]);
+          toast.error("خطا در دریافت سفارش‌ها");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
-  }, [isLoggedIn, user, isAdmin, router]);
+  }, [authLoading, isLoggedIn, user, isAdmin, router]);
 
   const stats = useMemo(() => {
     return {
@@ -80,17 +92,47 @@ export default function AdminOrdersPage() {
   }, [orders, search, statusFilter]);
 
   const handleRefresh = () => {
-    setOrders(getOrders());
-    toast.success("لیست سفارش‌ها بروزرسانی شد");
+    setLoading(true);
+    fetchAllOrders()
+      .then((fetchedOrders) => {
+        setOrders(fetchedOrders);
+        toast.success("لیست سفارش‌ها بروزرسانی شد");
+      })
+      .catch(() => {
+        toast.error("خطا در بروزرسانی سفارش‌ها");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
-  const handleStatusChange = (orderId: string, status: OrderStatus) => {
-    const updatedOrders = updateOrderStatus(orderId, status);
-    setOrders(updatedOrders);
-    toast.success("وضعیت سفارش تغییر کرد");
+  const handleStatusChange = async (orderId: string, status: OrderStatus) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}/status`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (response.ok) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.id === orderId ? { ...order, status } : order
+          )
+        );
+        toast.success("وضعیت سفارش تغییر کرد");
+      } else {
+        toast.error("خطا در تغییر وضعیت");
+      }
+    } catch {
+      toast.error("خطا در ارتباط با سرور");
+    }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4" dir="rtl">
         <div className="rounded-3xl border border-neutral-200 bg-white px-8 py-10 text-center shadow-sm">
@@ -102,16 +144,30 @@ export default function AdminOrdersPage() {
   }
 
   if (!isLoggedIn || !user || !isAdmin) {
+    return (
+      <main className="mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4" dir="rtl">
+        <div className="rounded-3xl border border-neutral-200 bg-white px-8 py-10 text-center shadow-sm">
+          <div className="text-3xl mb-4">🔒</div>
+          <p className="text-lg font-bold text-neutral-900">دسترسی محدود</p>
+          <p className="text-sm text-neutral-500">شما سطح دسترسی لازم را ندارید.</p>
+        </div>
+      </main>
+    );
+  }
+    );
+  }
+
+  if (!isLoggedIn || !user || !isAdmin) {
     return null;
   }
 
   return (
     <main className="min-h-screen bg-gray-50 pb-12" dir="rtl">
-      <section className="relative overflow-hidden bg-gradient-to-r from-rose-600 via-red-600 to-orange-500 py-14 text-white shadow-lg md:py-16">
+      <section className="relative overflow-hidden bg-linear-to-r from-rose-600 via-red-600 to-orange-500 py-14 text-white shadow-lg md:py-16">
         <div className="absolute inset-0">
           <div className="absolute -left-24 top-6 h-72 w-72 rounded-full bg-white/20 blur-3xl" />
           <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-black/15 blur-3xl" />
-          <div className="absolute bottom-0 left-1/2 h-40 w-[34rem] -translate-x-1/2 rounded-full bg-orange-300/20 blur-3xl" />
+          <div className="absolute bottom-0 left-1/2 h-40 w-136 -translate-x-1/2 rounded-full bg-orange-300/20 blur-3xl" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.08),transparent_30%)]" />
         </div>
 

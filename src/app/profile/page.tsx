@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 import { useAuth } from "../store/auth-context";
 import { useCart } from "../store/cart-context";
-import { getOrdersByUser } from "../utils/orders";
+import { fetchUserOrders } from "../utils/orders";
 import { formatPrice } from "../utils/formatPrice";
 import { getStatusClass, getStatusLabel } from "../utils/orderStatus";
 import type { Order } from "../types/order";
@@ -32,6 +32,8 @@ export default function ProfilePage() {
 
   const [filter, setFilter] = useState<OrderFilter>("all");
   const [loggingOut, setLoggingOut] = useState(false);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   useEffect(() => {
     if (!loading && !isLoggedIn) {
@@ -39,10 +41,22 @@ export default function ProfilePage() {
     }
   }, [loading, isLoggedIn, router]);
 
-  const orders = useMemo(() => {
-    if (!user) return [];
-    return getOrdersByUser(user);
-  }, [user]);
+  // دریافت سفارش‌های کاربر از API
+  useEffect(() => {
+    if (user && isLoggedIn) {
+      setLoadingOrders(true);
+      fetchUserOrders()
+        .then((fetchedOrders) => {
+          setOrders(fetchedOrders);
+        })
+        .catch(() => {
+          setOrders([]);
+        })
+        .finally(() => {
+          setLoadingOrders(false);
+        });
+    }
+  }, [user, isLoggedIn]);
 
   const filteredOrders = useMemo(() => {
     const sortedOrders = [...orders].sort(

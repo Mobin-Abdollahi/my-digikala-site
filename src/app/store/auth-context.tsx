@@ -13,7 +13,7 @@ type User = {
   id: string;
   name: string;
   phone: string;
-  role?: string;
+  role: string;
 };
 
 type LoginResult = {
@@ -44,9 +44,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         cache: "no-store",
       });
 
+      if (!response.ok) {
+        setUser(null);
+        return;
+      }
+
       const data = await response.json();
 
-      setUser(data.isLoggedIn ? data.user : null);
+      if (data.isLoggedIn && data.user) {
+        setUser(data.user);
+      } else {
+        setUser(null);
+      }
     } catch {
       setUser(null);
     } finally {
@@ -59,41 +68,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser]);
 
   const login = async (
-      name: string,
-      phone: string
+    name: string,
+    phone: string
   ): Promise<LoginResult> => {
     try {
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ name, phone }),
-    });
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ name, phone }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok || !data.success) {
+      if (!response.ok || !data.success) {
+        return {
+          success: false,
+          message: data.message || "ورود انجام نشد.",
+        };
+      }
+
+      await refreshUser();
+
+      return {
+        success: true,
+      };
+    } catch {
       return {
         success: false,
-        message: data.message || "ورود انجام نشد.",
+        message: "ارتباط با سرور برقرار نشد.",
       };
     }
-
-    await refreshUser();
-
-    return {
-      success: true,
-    };
-  } catch {
-    return {
-      success: false,
-      message: "ارتباط با سرور برقرار نشد.",
-    };
-  }
-};
-
+  };
 
   const logout = async () => {
     try {

@@ -17,7 +17,7 @@ import {
 import GoldPriceChart from "../components/gold/GoldPriceChart";
 import MobileAnimation from "../components/gold/MobileAnimation";
 import { useAuth } from "../store/auth-context";
-import { saveOrder } from "../utils/orders";
+import { createGoldOrder } from "../utils/orders";
 
 const GOLD_PRICE_PER_GRAM = 7450000;
 const QUICK_AMOUNTS = [0.5, 1, 2, 5];
@@ -69,7 +69,7 @@ export default function GoldPage() {
     setIsBuyModalOpen(true);
   };
 
-  const handleConfirmPurchase = () => {
+  const handleConfirmPurchase = async () => {
     if (!isLoggedIn || !user) {
       toast.error("لطفاً ابتدا وارد حساب کاربری خود شوید.");
       router.push("/login?redirect=/gold");
@@ -81,40 +81,30 @@ export default function GoldPage() {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      setIsSubmitting(true);
-
-      const orderId =
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `gold-${Date.now()}`;
-
-      const goldOrder = {
-        id: orderId,
-        userPhone: user.phone,
+      const result = await createGoldOrder({
         receiverName: user.name || "خریدار طلا",
         phone: user.phone,
-        address: "خرید طلای دیجیتال (تحویل موقت در کیف پول)",
-        items: [],
-        totalPrice,
-        status: "pending" as const,
-        createdAt: new Date().toISOString(),
-        orderType: "gold" as const,
         goldWeight: numericGoldAmount,
         goldPricePerGram: GOLD_PRICE_PER_GRAM,
-      };
+        totalPrice,
+      });
 
-      saveOrder(goldOrder);
+      if (result.success && result.order) {
+        toast.success(
+          `سفارش خرید ${numericGoldAmount.toLocaleString(
+            "fa-IR"
+          )} گرم طلا با موفقیت ثبت شد.`
+        );
 
-      toast.success(
-        `سفارش خرید ${numericGoldAmount.toLocaleString(
-          "fa-IR"
-        )} گرم طلا با موفقیت ثبت شد.`
-      );
-
-      setIsBuyModalOpen(false);
-      setGoldAmount("1");
-      router.push(`/order-success?orderId=${orderId}`);
+        setIsBuyModalOpen(false);
+        setGoldAmount("1");
+        router.push(`/order-success?orderId=${result.order.id}`);
+      } else {
+        toast.error(result.message || "خطایی در ثبت سفارش رخ داد.");
+      }
     } catch {
       toast.error("خطایی در ثبت سفارش رخ داد. لطفاً مجدداً تلاش کنید.");
     } finally {
@@ -300,10 +290,10 @@ export default function GoldPage() {
         </div>
       </section>
 
-      {/* Buy Modal - کوچک شده به max-w-sm و تراز کاملاً وسط با z-[999] */}
+      {/* Buy Modal - کوچک شده به max-w-sm و تراز کاملاً وسط با z-999 */}
       {isBuyModalOpen && (
         <div
-          className="fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black/60 p-4 overflow-y-auto"
+          className="fixed inset-0 z-999 grid h-screen w-screen place-items-center bg-black/60 p-4 overflow-y-auto"
           onClick={handleCloseModal}
         >
           <div
@@ -401,10 +391,10 @@ export default function GoldPage() {
         </div>
       )}
 
-      {/* Details Modal - کوچک شده به max-w-sm و تراز کاملاً وسط با z-[999] */}
+      {/* Details Modal - کوچک شده به max-w-sm و تراز کاملاً وسط با z-999 */}
       {isDetailsModalOpen && (
         <div
-          className="fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black/60 p-4 overflow-y-auto"
+          className="fixed inset-0 z-999 grid h-screen w-screen place-items-center bg-black/60 p-4 overflow-y-auto"
           onClick={() => setIsDetailsModalOpen(false)}
         >
           <div

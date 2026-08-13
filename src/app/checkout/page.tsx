@@ -49,46 +49,47 @@ export default function CheckoutPage() {
   }, [items]);
 
   const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!user) return;
+    if (!user) return;
 
-  if (!receiverName.trim() || !phone.trim() || !address.trim()) {
-    toast.error("لطفاً همه فیلدها را پر کنید");
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    const response = await fetch("/api/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        receiverName: receiverName.trim(),
-        phone: phone.trim(),
-        address: address.trim(),
-        items,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data?.error || "ثبت سفارش ناموفق بود");
+    if (!receiverName.trim() || !phone.trim() || !address.trim()) {
+      toast.error("لطفاً همه فیلدها را پر کنید");
+      return;
     }
 
-    clearCart();
-    toast.success("سفارش شما با موفقیت ثبت شد");
-    router.push("/order-success");
-  } catch (error) {
-    toast.error(error instanceof Error ? error.message : "خطا در ثبت سفارش");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          receiverName: receiverName.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          items,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "ثبت سفارش ناموفق بود");
+      }
+
+      clearCart();
+      toast.success("سفارش شما با موفقیت ثبت شد");
+      router.push(`/order-success?orderId=${data.order?.id}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "خطا در ثبت سفارش");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
 
   // ممانعت از پرش صفحه تا بارگذاری وضعیت احراز هویت

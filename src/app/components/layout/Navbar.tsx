@@ -6,7 +6,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "../../store/auth-context";
 import { useCart } from "../../store/cart-context";
-import { isAdminPhone } from "../../utils/auth";
 
 const categoryItems = [
   { label: "موبایل", category: "موبایل" },
@@ -37,7 +36,7 @@ export default function Navbar() {
     setSearchValue(currentSearch);
   }, [currentSearch]);
 
-  const isAdmin = isAdminPhone(user?.phone);
+  const isAdmin = user?.role === "admin";
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

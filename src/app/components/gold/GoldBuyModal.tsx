@@ -6,7 +6,7 @@ import { X, Info } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../../store/auth-context";
-import { saveOrder } from "../../utils/orders";
+import { createGoldOrder } from "../../utils/orders";
 
 type GoldBuyModalProps = {
   isOpen: boolean;
@@ -44,7 +44,7 @@ export default function GoldBuyModal({
   const formatPrice = (price: number) =>
     price.toLocaleString("fa-IR");
 
-  const handleConfirmPurchase = () => {
+  const handleConfirmPurchase = async () => {
     if (!isLoggedIn || !user) {
       onClose();
       router.push("/login?redirect=/gold");
@@ -56,38 +56,25 @@ export default function GoldBuyModal({
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      setIsSubmitting(true);
-
-      const orderId =
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `gold-${Date.now()}`;
-
-      const goldOrder = {
-        id: orderId,
-        userPhone: user.phone,
+      const result = await createGoldOrder({
         receiverName: user.name,
         phone: user.phone,
-        address: "خرید طلای دیجیتال",
-        items: [],
-        totalPrice,
-        status: "pending" as const,
-        createdAt: new Date().toISOString(),
-
-        orderType: "gold" as const,
         goldWeight: numericGoldAmount,
         goldPricePerGram: GOLD_PRICE_PER_GRAM,
-      };
+        totalPrice,
+      });
 
-      saveOrder(goldOrder);
-
-      toast.success("سفارش خرید طلا با موفقیت ثبت شد.");
-
-      onClose();
-      setGoldAmount("1");
-
-      router.push(`/order-success?orderId=${orderId}`);
+      if (result.success && result.order) {
+        toast.success("سفارش خرید طلا با موفقیت ثبت شد.");
+        onClose();
+        setGoldAmount("1");
+        router.push(`/order-success?orderId=${result.order.id}`);
+      } else {
+        toast.error(result.message || "خطایی در ثبت سفارش رخ داد.");
+      }
     } catch {
       toast.error("ثبت سفارش با خطا مواجه شد.");
     } finally {

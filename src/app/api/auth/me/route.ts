@@ -4,22 +4,24 @@ import { jwtVerify } from "jose";
 
 const COOKIE_NAME = "auth_token";
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || "default_super_secret_jwt_key_123456"
-);
+if (!process.env.JWT_SECRET) {
+  throw new Error("FATAL ERROR: JWT_SECRET is not defined in environment variables.");
+}
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
-
-  if (!token) {
-    return NextResponse.json({
-      isLoggedIn: false,
-      user: null,
-    });
-  }
-
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(COOKIE_NAME)?.value;
+
+    if (!token) {
+      return NextResponse.json({
+        isLoggedIn: false,
+        user: null,
+      });
+    }
+
     const { payload } = await jwtVerify(token, secret);
 
     return NextResponse.json({
@@ -28,7 +30,7 @@ export async function GET() {
         id: String(payload.id),
         name: String(payload.name),
         phone: String(payload.phone),
-        role: payload.role ? String(payload.role) : "user",
+        role: String(payload.role || "user"),
       },
     });
   } catch {
