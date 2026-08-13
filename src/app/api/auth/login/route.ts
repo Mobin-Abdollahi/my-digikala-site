@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { SignJWT } from "jose";
+import { isAdminPhone, normalizePhone } from "../../../utils/auth";
 
 const COOKIE_NAME = "auth_token";
-const ADMIN_PHONES = ["09123456789"]; // آرایه‌ای از شماره‌های تلفن ادمین
 
 if (!process.env.JWT_SECRET) {
   throw new Error("FATAL ERROR: JWT_SECRET is not defined in environment variables.");
@@ -22,15 +22,22 @@ export async function POST(request: Request) {
       );
     }
 
-    // بررسی آیا کاربر ادمین است
-    const isAdmin = ADMIN_PHONES.includes(phone);
-    const userId = crypto.randomUUID();
+    const normalizedPhone = normalizePhone(phone);
 
-    // ایجاد توکن JWT
+    if (!normalizedPhone) {
+      return NextResponse.json(
+        { success: false, message: "شماره تلفن نامعتبر است." },
+        { status: 400 }
+      );
+    }
+
+    const isAdmin = isAdminPhone(normalizedPhone);
+    const userId = normalizedPhone;
+
     const token = await new SignJWT({
       id: userId,
-      name,
-      phone,
+      name: String(name).trim(),
+      phone: normalizedPhone,
       role: isAdmin ? "admin" : "user",
     })
       .setProtectedHeader({ alg: "HS256" })

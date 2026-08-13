@@ -20,10 +20,15 @@ export async function GET(req: Request) {
     }
 
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    const userId = String(payload.id);
+    const userId = String(payload.id || "");
+    const userPhone = String(payload.phone || "");
 
-    // دریافت تمام سفارش‌های کاربر بر اساس userId
-    const userOrders = getOrdersByUserId(userId);
+    const allOrders = getOrders();
+    const userOrders = allOrders.filter((order) => {
+      if (userId && order.userId === userId) return true;
+      if (userPhone && (order.userPhone === userPhone || order.phone === userPhone)) return true;
+      return false;
+    });
 
     return NextResponse.json({
       success: true,
@@ -51,9 +56,64 @@ export async function POST(req: Request) {
     const { payload } = await jwtVerify(token, JWT_SECRET);
 
     const body = await req.json();
-    const { receiverName, phone, address, items } = body;
+    const {
+      receiverName,
+      phone,
+      address,
+      items,
+      orderType,
+      goldWeight,
+      goldPricePerGram,
+      totalPrice: providedTotalPrice,
+    } = body;
 
-    if (!receiverName || !phone || !address || !items || items.length === 0) {
+    const normalizedOrderType = orderType === "gold" ? "gold" : "product";
+    const normalizedItems = Array.isArray(items) ? items : [];
+
+    if (!receiverName || !phone || !address) {
+      return NextResponse.json(
+        { error: "Invalid order data" },
+        { status: 400 }
+      );
+    }
+
+    if (normalizedOrderType === "gold") {
+      const goldAmount = Number(goldWeight || 0);
+      const goldPrice = Number(goldPricePerGram || 0);
+      const totalPrice = Number(providedTotalPrice || 0);
+
+      if (!goldAmount || !goldPrice || !totalPrice || totalPrice <= 0) {
+        return NextResponse.json(
+          { error: "Invalid gold order data" },
+          { status: 400 }
+        );
+      }
+
+      const newOrder: Order = {
+        id: crypto.randomUUID(),
+        userId: String(payload.id),
+        userPhone: String(payload.phone),
+        receiverName,
+        phone,
+        address,
+        items: [],
+        totalPrice,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        orderType: "gold",
+        goldWeight: goldAmount,
+        goldPricePerGram: goldPrice,
+      };
+
+      addOrder(newOrder);
+
+      return NextResponse.json(
+        { success: true, order: newOrder },
+        { status: 201 }
+      );
+    }
+
+    if (normalizedItems.length === 0) {
       return NextResponse.json(
         { error: "Invalid order data" },
         { status: 400 }
@@ -61,7 +121,7 @@ export async function POST(req: Request) {
     }
 
     // محاسبه قیمت کل در سمت سرور (برای امنیت بیشتر)
-    const totalPrice = items.reduce(
+    const totalPrice = normalizedItems.reduce(
       (sum: number, item: { price?: number; quantity?: number }) =>
         sum + Number(item.price || 0) * Number(item.quantity || 1),
       0
@@ -74,10 +134,11 @@ export async function POST(req: Request) {
       receiverName,
       phone,
       address,
-      items,
+      items: normalizedItems,
       totalPrice,
       status: "pending",
       createdAt: new Date().toISOString(),
+      orderType: "product",
     };
 
     // ذخیره سفارش در سرور

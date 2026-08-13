@@ -9,6 +9,7 @@ import { useAuth } from "../../store/auth-context";
 import { fetchAllOrders } from "../../utils/orders";
 import { formatPrice } from "../../utils/formatPrice";
 import { getStatusClass, getStatusLabel } from "../../utils/orderStatus";
+import { getVisibleOrderItems } from "../../utils/productManager";
 import type { Order, OrderStatus } from "../../types/order";
 
 const statusOptions: Array<"all" | OrderStatus> = [
@@ -117,6 +118,8 @@ export default function AdminOrdersPage() {
         body: JSON.stringify({ status }),
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (response.ok) {
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
@@ -125,7 +128,7 @@ export default function AdminOrdersPage() {
         );
         toast.success("وضعیت سفارش تغییر کرد");
       } else {
-        toast.error("خطا در تغییر وضعیت");
+        toast.error(data?.error || data?.message || "خطا در تغییر وضعیت");
       }
     } catch {
       toast.error("خطا در ارتباط با سرور");
@@ -298,7 +301,7 @@ export default function AdminOrdersPage() {
                   <tbody className="divide-y divide-neutral-100">
                     {filteredOrders.map((order) => {
                       const safeStatus = order.status ?? "pending";
-                      const items = Array.isArray(order.items) ? order.items : [];
+                      const items = getVisibleOrderItems(Array.isArray(order.items) ? order.items : []);
                       const isGoldOrder = order.orderType === "gold";
 
                       return (
@@ -397,7 +400,7 @@ export default function AdminOrdersPage() {
               <div className="grid gap-4 xl:hidden">
                 {filteredOrders.map((order) => {
                   const safeStatus = order.status ?? "pending";
-                  const items = Array.isArray(order.items) ? order.items : [];
+                  const items = getVisibleOrderItems(Array.isArray(order.items) ? order.items : []);
                   const isGoldOrder = order.orderType === "gold";
 
                   return (

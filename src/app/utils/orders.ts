@@ -147,16 +147,42 @@ export function saveOrder(order: Order) {
 }
 
 export function getOrdersByUser(user: { id?: string; phone: string }): Order[] {
-  return [];
+  if (!user) return [];
+
+  const stored = typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("digikala_orders") || "[]")
+    : [];
+
+  return (stored as Order[]).filter((order) => {
+    if (user.id && order.userId && order.userId === user.id) return true;
+    if (!user.id && order.userPhone && order.userPhone === user.phone) return true;
+    return order.phone === user.phone || order.userPhone === user.phone;
+  });
 }
 
 export function getOrdersByUserPhone(userPhone: string): Order[] {
-  return [];
+  const stored = typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("digikala_orders") || "[]")
+    : [];
+
+  return (stored as Order[]).filter((order) => order.phone === userPhone || order.userPhone === userPhone);
 }
 
 export function updateOrderStatus(
   orderId: string,
   status: Order["status"]
 ): Order[] {
-  return [];
+  const stored = typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("digikala_orders") || "[]")
+    : [];
+
+  const next = (stored as Order[]).map((order) =>
+    order.id === orderId ? { ...order, status } : order
+  );
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem("digikala_orders", JSON.stringify(next));
+  }
+
+  return next;
 }

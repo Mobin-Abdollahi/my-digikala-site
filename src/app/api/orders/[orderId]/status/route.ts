@@ -10,9 +10,10 @@ const JWT_SECRET = new TextEncoder().encode(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { orderId: string } }
+  context: { params: Promise<{ orderId: string }> }
 ) {
   try {
+    const { orderId } = await context.params;
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
 
@@ -27,7 +28,6 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const orderId = await Promise.resolve(params.orderId);
     const body = await req.json();
     const { status } = body;
 

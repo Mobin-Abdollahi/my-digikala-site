@@ -24,7 +24,7 @@ function readLocalProducts(): Product[] {
   }
 }
 
-function readDeletedIds(): string[] {
+export function readDeletedIds(): string[] {
   if (!canUseStorage()) return [];
 
   try {
@@ -143,4 +143,24 @@ export function deleteProduct(id: Product["id"]): void {
 
   saveLocalProducts(updatedLocalProducts);
   saveDeletedIds(updatedDeletedIds);
+}
+
+export function getVisibleOrderItems<T extends { id: string | number; title?: string; price?: number; image?: string; quantity?: number }>(items: T[]): T[] {
+  const deletedIds = new Set(readDeletedIds());
+  const catalog = getProducts();
+
+  return items
+    .filter((item) => !deletedIds.has(String(item.id)))
+    .map((item) => {
+      const catalogItem = catalog.find((product) => String(product.id) === String(item.id));
+
+      if (!catalogItem) return item;
+
+      return {
+        ...item,
+        title: catalogItem.title,
+        price: catalogItem.price,
+        image: catalogItem.image,
+      } as T;
+    });
 }

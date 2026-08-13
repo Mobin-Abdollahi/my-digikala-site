@@ -19,10 +19,18 @@ export interface Order {
   totalPrice: number;
   status: "pending" | "processing" | "shipped" | "delivered";
   createdAt: string;
+  orderType?: "product" | "gold";
+  goldWeight?: number;
+  goldPricePerGram?: number;
+}
+
+declare global {
+  var __digikala_orders_store__: Order[] | undefined;
 }
 
 // ذخیره‌سازی موقت در حافظه (در تولید باید به دیتابیس منتقل شود)
-const ordersStore: Order[] = [];
+const ordersStore: Order[] =
+  globalThis.__digikala_orders_store__ ?? (globalThis.__digikala_orders_store__ = []);
 
 export function addOrder(order: Order): Order {
   ordersStore.unshift(order);

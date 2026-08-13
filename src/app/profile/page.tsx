@@ -11,6 +11,7 @@ import { useCart } from "../store/cart-context";
 import { fetchUserOrders } from "../utils/orders";
 import { formatPrice } from "../utils/formatPrice";
 import { getStatusClass, getStatusLabel } from "../utils/orderStatus";
+import { getVisibleOrderItems } from "../utils/productManager";
 import type { Order } from "../types/order";
 import { toast } from "react-hot-toast";
 
@@ -78,7 +79,14 @@ export default function ProfilePage() {
   );
 
   const handleReorder = (items: Order["items"]) => {
-    items.forEach((item) => {
+    const visibleItems = getVisibleOrderItems(items);
+
+    if (visibleItems.length === 0) {
+      toast.error("هیچ محصول فعال‌ای برای سفارش مجدد باقی نمانده است.");
+      return;
+    }
+
+    visibleItems.forEach((item) => {
       addToCart(item, item.quantity);
     });
     toast.success("محصولات به سبد خرید اضافه شدند.");
@@ -215,7 +223,7 @@ export default function ProfilePage() {
             <div className="space-y-4">
               {filteredOrders.map((order) => {
                 const safeStatus = order.status ?? "pending";
-                const items = Array.isArray(order.items) ? order.items : [];
+                const items = getVisibleOrderItems(Array.isArray(order.items) ? order.items : []);
 
                 return (
                   <article

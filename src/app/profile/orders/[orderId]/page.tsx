@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../../../store/auth-context";
 import { useCart } from "../../../store/cart-context";
 import { formatPrice } from "../../../utils/formatPrice";
-import { getOrdersByUser } from "../../../utils/orders";
+import { fetchUserOrders } from "../../../utils/orders";
 import { getStatusClass, getStatusLabel } from "../../../utils/orderStatus";
+import { getVisibleOrderItems } from "../../../utils/productManager";
+import type { Order } from "../../../types/order";
 
 export default function OrderDetailsPage() {
   const router = useRouter();
@@ -19,30 +21,54 @@ export default function OrderDetailsPage() {
   const { addToCart } = useCart();
 
   const orderId = params.orderId;
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loadingOrder, setLoadingOrder] = useState(true);
 
   useEffect(() => {
     if (!isLoggedIn || !user) {
       router.replace(`/login?redirect=/profile/orders/${orderId}`);
+      return;
     }
+
+    let isMounted = true;
+
+    setLoadingOrder(true);
+
+    fetchUserOrders()
+      .then((orders) => {
+        if (!isMounted) return;
+
+        const foundOrder = orders.find((item) => item.id === orderId) ?? null;
+
+        if (foundOrder) {
+          foundOrder.items = getVisibleOrderItems(foundOrder.items || []);
+        }
+
+        setOrder(foundOrder);
+      })
+      .catch(() => {
+        if (isMounted) setOrder(null);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingOrder(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [isLoggedIn, user, router, orderId]);
-
-  const order = useMemo(() => {
-    if (!user) return null;
-
-    /*
-     * سفارش‌ها ابتدا بر اساس userId فیلتر می‌شوند.
-     * برای سفارش‌های قدیمی که userId ندارند، داخل تابع
-     * getOrdersByUser، شماره تلفن به‌عنوان fallback بررسی می‌شود.
-     */
-    const orders = getOrdersByUser(user);
-
-    return orders.find((item) => item.id === orderId) ?? null;
-  }, [user, orderId]);
 
   const handleReorder = () => {
     if (!order) return;
 
-    order.items.forEach((item) => {
+    const visibleItems = getVisibleOrderItems(order.items);
+
+    if (visibleItems.length === 0) {
+      toast.error("هیچ محصول فعال‌ای برای سفارش مجدد باقی نمانده است.");
+      return;
+    }
+
+    visibleItems.forEach((item) => {
       addToCart(
         {
           id: item.id,
@@ -64,12 +90,24 @@ export default function OrderDetailsPage() {
     return null;
   }
 
-  if (!order) {
+  if (loadingOrder) {
     return (
       <main className="container mx-auto px-4 py-10">
         <div className="rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm">
           <h1 className="mb-3 text-xl font-bold text-gray-800">
-            سفارش پیدا نشد
+            در حال بارگذاری سفارش...
+          </h1>
+        </div>
+      </main>
+    );
+  }
+
+  if (!order || order.items.length === 0) {
+    return (
+      <main className="container mx-auto px-4 py-10">
+        <div className="rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm">
+          <h1 className="mb-3 text-xl font-bold text-gray-800">
+            سفارش پیدا نشد یا همهٔ محصولات آن حذف شده‌اند
           </h1>
 
           <Link
