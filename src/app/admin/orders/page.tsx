@@ -154,12 +154,6 @@ export default function AdminOrdersPage() {
       </main>
     );
   }
-    );
-  }
-
-  if (!isLoggedIn || !user || !isAdmin) {
-    return null;
-  }
 
   return (
     <main className="min-h-screen bg-gray-50 pb-12" dir="rtl">

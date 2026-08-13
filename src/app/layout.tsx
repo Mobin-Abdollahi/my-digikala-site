@@ -9,8 +9,12 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./store/auth-context";
 
 export const metadata: Metadata = {
-  title: "My Mobinkala site",
-  description: "Mobinkala site project with Next.js",
+  title: "Mobinkala - فروشگاه اینترنتی",
+  description: "خرید محصولات الکترونیکی، موبایل، لپ‌تاپ و طلای دیجیتال",
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
